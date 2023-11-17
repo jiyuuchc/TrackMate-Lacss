@@ -1,0 +1,26 @@
+## Maven ##
+/target/
+/.venv/
+
+## Eclipse ##
+/.classpath
+/.project
+/.settings/
+
+## vim ##
+*.swp
+
+## Interactive tests ##
+/samples/
+
+## MacOSX
+.DS_Store
+
+## SciJava release tools
+pom.xml.releaseBackup
+
+.venv/**
+**/__pycache__/**
+
+.vscode/**
+src/main/resources/model/**
