@@ -2,9 +2,13 @@
 
 A plugin of a plugin. 
 
-This software adds a new cell detector for TraceMate, a cell/object tracker plugin for FIJI. The detector uses a pretrained deep-learning model (LACSS) to detect and segment cells.
+This software adds a new cell detector to [TrackMate](https://imagej.net/plugins/trackmate/index), a cell/object tracker plugin for [ImageJ](https://imagej.net/). The detector uses a pretrained [deep-learning model](https://github.com/jiyuuchc/lacss) to detect and segment cells.
 
 ### Installation
 
-1. Install [Lacss](https://github.com/jiyuuchc/lacss) according to it's [documentation](https://jiyuuchc.github.io/lacss/install/)
-2. Copy the [Jar file](https://github.com/jiyuuchc/TrackMate-Lacss/releases/) into FIJI's plugin folder.
+1. Install [Lacss](https://github.com/jiyuuchc/lacss) according to its [documentation](https://jiyuuchc.github.io/lacss/install/)
+2. Copy the [Jar file](https://github.com/jiyuuchc/TrackMate-Lacss/releases/) into ImageJ's plugin folder.
+
+### How does it work
+
+The plugin is a thin Java wrapper around the Lacss python module, which runs as a separate process. The Java code communicate with the Python process via [anonymous pipe](https://en.wikipedia.org/wiki/Anonymous_pipe), by sending/receiving messages encoded in [protobuf](https://protobuf.dev/).
