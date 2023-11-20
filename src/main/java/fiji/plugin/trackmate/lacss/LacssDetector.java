@@ -25,7 +25,6 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ShortArray;
-import net.imglib2.loops.LoopBuilder;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
@@ -77,18 +76,30 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			throws IOException {
 		long[] dims = crop.dimensionsAsLongArray();
 		long n_ch = 1;
-		if (img.dimensionIndex(Axes.CHANNEL) != -1) {
+		int ch_c = img.dimensionIndex(Axes.CHANNEL);
+		int ch_y = img.dimensionIndex(Axes.Y);
+		int ch_x = img.dimensionIndex(Axes.X);
+		if (ch_c != -1) {
 			n_ch = dims[img.dimensionIndex(Axes.CHANNEL)];
-		}
-		if (img.dimensionIndex(Axes.Z) != -1) {
-			n_ch = n_ch * dims[img.dimensionIndex(Axes.Z)];
-		}
-		final long height = dims[img.dimensionIndex(Axes.Y)];
-		final long width = dims[img.dimensionIndex(Axes.X)];
+		} 
+		// if (img.dimensionIndex(Axes.Z) != -1) {
+		// 	n_ch = n_ch * dims[img.dimensionIndex(Axes.Z)];
+		// }
+		final long height = dims[ch_y];
+		final long width = dims[ch_x];
 
 		ByteBuffer data = ByteBuffer.allocate((int) (width * height * n_ch * Float.BYTES));
 		RandomAccessibleInterval<FloatType> floatImg = RealTypeConverters.convert(crop, new FloatType());
-		LoopBuilder.setImages(floatImg).flatIterationOrder().forEachPixel(p -> data.putFloat((Float) p.get()));
+		long [] pos = new long[dims.length];
+		for (long idx = 0; idx < (int)(width * height * n_ch) ; idx+=1) { // enfore y-x-c format
+			if (ch_c != -1) {
+				pos[ch_c] = idx % n_ch ;
+			}
+			pos[ch_x] = ( idx / n_ch ) % width;
+			pos[ch_y] = idx / (n_ch * width);
+			data.putFloat(floatImg.getAt(pos).get());
+		}
+		// LoopBuilder.setImages(floatImg).flatIterationOrder().forEachPixel(p -> data.putFloat((Float) p.get()));
 
 		LacssMsg.Image encoded_img = LacssMsg.Image.newBuilder()
 				.setWidth(width)
@@ -111,7 +122,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 		long height = msg.getHeight();
 		long width = msg.getWidth();
 
-		long[] dims = new long[] { height, width };
+		long[] dims = new long[] {width, height};
 		short[] data = new short[(int) (height * width)];
 
 		msg.getData().asReadOnlyByteBuffer().asShortBuffer().get(data);
