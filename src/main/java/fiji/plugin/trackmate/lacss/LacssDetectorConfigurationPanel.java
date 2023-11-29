@@ -200,7 +200,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblPretrainedModel.anchor = GridBagConstraints.EAST;
 		gbcLblPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblPretrainedModel.gridx = 0;
-		gbcLblPretrainedModel.gridy = 6;
+		gbcLblPretrainedModel.gridy = 3;
 		add( lblPretrainedModel, gbcLblPretrainedModel );
 
 		cmbboxPretrainedModel = new JComboBox<>( new Vector<>( Arrays.asList( PretrainedModel.values() ) ) );
@@ -210,7 +210,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcCmbboxPretrainedModel.insets = new Insets( 0, 5, 5, 0 );
 		gbcCmbboxPretrainedModel.fill = GridBagConstraints.HORIZONTAL;
 		gbcCmbboxPretrainedModel.gridx = 1;
-		gbcCmbboxPretrainedModel.gridy = 6;
+		gbcCmbboxPretrainedModel.gridy = 3;
 		add( cmbboxPretrainedModel, gbcCmbboxPretrainedModel );
 
 		/*
@@ -257,7 +257,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblMin_cell_area.anchor = GridBagConstraints.EAST;
 		gbcLblMin_cell_area.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblMin_cell_area.gridx = 0;
-		gbcLblMin_cell_area.gridy = 9;
+		gbcLblMin_cell_area.gridy = 6;
 		add( lblMin_cell_area, gbcLblMin_cell_area );
 
 		ftfmin_cell_area = new JFormattedTextField( MIN_CELL_AREA_FORMAT );
@@ -267,7 +267,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfmin_cell_area.insets = new Insets( 0, 5, 5, 5 );
 		gbcFtfmin_cell_area.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfmin_cell_area.gridx = 1;
-		gbcFtfmin_cell_area.gridy = 9;
+		gbcFtfmin_cell_area.gridy = 6;
 		add( ftfmin_cell_area, gbcFtfmin_cell_area );
 
 		final JLabel lblSpaceUnits = new JLabel( model.getSpaceUnits() );
@@ -275,7 +275,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		final GridBagConstraints gbcLblSpaceUnits = new GridBagConstraints();
 		gbcLblSpaceUnits.insets = new Insets( 0, 5, 5, 0 );
 		gbcLblSpaceUnits.gridx = 2;
-		gbcLblSpaceUnits.gridy = 9;
+		gbcLblSpaceUnits.gridy = 6;
 		add( lblSpaceUnits, gbcLblSpaceUnits );
 
 		//* Return Label */
@@ -298,7 +298,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblMin_scaling.anchor = GridBagConstraints.EAST;
 		gbcLblMin_scaling.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblMin_scaling.gridx = 0;
-		gbcLblMin_scaling.gridy = 10;
+		gbcLblMin_scaling.gridy = 7;
 		add( lblMin_scaling, gbcLblMin_scaling );
 
 		ftfmin_scaling = new JFormattedTextField( MIN_SCALING_FORMAT );
@@ -308,7 +308,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfmin_scaling.insets = new Insets( 0, 5, 5, 5 );
 		gbcFtfmin_scaling.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfmin_scaling.gridx = 1;
-		gbcFtfmin_scaling.gridy = 10;
+		gbcFtfmin_scaling.gridy = 7;
 		add( ftfmin_scaling, gbcFtfmin_scaling );
 
 		/* nms_iou: Optional iou threshold for the non-max-suppression post-processing. Default is 0, which disable non-max-suppression.  */
@@ -319,7 +319,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblNms_iou.anchor = GridBagConstraints.EAST;
 		gbcLblNms_iou.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblNms_iou.gridx = 0;
-		gbcLblNms_iou.gridy = 11;
+		gbcLblNms_iou.gridy = 8;
 		add( lblnms_iou, gbcLblNms_iou );
 
 		ftfnms_iou = new JFormattedTextField( MIN_NMS_IOU_FORMAT );
@@ -329,7 +329,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfnms_iou.insets = new Insets( 0, 5, 5, 5 );
 		gbcFtfnms_iou.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfnms_iou.gridx = 1;
-		gbcFtfnms_iou.gridy = 11;
+		gbcFtfnms_iou.gridy = 8;
 		add( ftfnms_iou, gbcFtfnms_iou );
 
 		/* 	The minimal prediction scores.: Default : 0.5 */
@@ -340,7 +340,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblSegmentation_threshold.anchor = GridBagConstraints.EAST;
 		gbcLblSegmentation_threshold.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblSegmentation_threshold.gridx = 0;
-		gbcLblSegmentation_threshold.gridy = 12;
+		gbcLblSegmentation_threshold.gridy = 9;
 		add( lblsegmentation_threshold, gbcLblSegmentation_threshold );
 
 		ftfsegmentation_threshold = new JFormattedTextField( MIN_SEGMENTATION_THRESHOLD_FORMAT );
@@ -350,7 +350,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfsegmentation_threshold.insets = new Insets( 0, 5, 5, 5 );
 		gbcFtfsegmentation_threshold.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfsegmentation_threshold.gridx = 1;
-		gbcFtfsegmentation_threshold.gridy = 12;
+		gbcFtfsegmentation_threshold.gridy = 9;
 		add( ftfsegmentation_threshold, gbcFtfsegmentation_threshold );
 
 		/*
@@ -402,8 +402,8 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcChckbxBounds.anchor = GridBagConstraints.EAST;
 		gbcChckbxBounds.gridwidth = 2;
 		gbcChckbxBounds.insets = new Insets( 0, 5, 0, 0 );
-		gbcChckbxBounds.gridx = 1;
-		gbcChckbxBounds.gridy = 13;
+		gbcChckbxBounds.gridx = 0;
+		gbcChckbxBounds.gridy = 10;
 		add( chckbxBounds, gbcChckbxBounds );
 
 		/*
