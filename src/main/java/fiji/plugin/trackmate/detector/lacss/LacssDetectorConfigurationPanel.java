@@ -1,16 +1,16 @@
-package fiji.plugin.trackmate.lacss;
+package fiji.plugin.trackmate.detector.lacss;
 
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_LACSS_CUSTOM_MODEL_FILEPATH;
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_LACSS_MODEL;
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_LOGGER;
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_MIN_CELL_AREA;
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_NMS_IOU;
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_REMOVE_OUT_OF_BOUNDS;
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_SCALING;
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_SEGMENTATION_THRESHOLD;
 import static fiji.plugin.trackmate.gui.Fonts.BIG_FONT;
 import static fiji.plugin.trackmate.gui.Fonts.FONT;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
-import static fiji.plugin.trackmate.lacss.LacssDetectorFactory.KEY_LACSS_CUSTOM_MODEL_FILEPATH;
-import static fiji.plugin.trackmate.lacss.LacssDetectorFactory.KEY_LACSS_MODEL;
-import static fiji.plugin.trackmate.lacss.LacssDetectorFactory.KEY_LOGGER;
-import static fiji.plugin.trackmate.lacss.LacssDetectorFactory.KEY_MIN_CELL_AREA;
-import static fiji.plugin.trackmate.lacss.LacssDetectorFactory.KEY_NMS_IOU;
-import static fiji.plugin.trackmate.lacss.LacssDetectorFactory.KEY_REMOVE_OUT_OF_BOUNDS;
-import static fiji.plugin.trackmate.lacss.LacssDetectorFactory.KEY_SCALING;
-import static fiji.plugin.trackmate.lacss.LacssDetectorFactory.KEY_SEGMENTATION_THRESHOLD;
 
 import java.awt.Color;
 import java.awt.Cursor;

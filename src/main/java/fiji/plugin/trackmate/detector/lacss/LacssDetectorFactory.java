@@ -1,4 +1,4 @@
-package fiji.plugin.trackmate.lacss;
+package fiji.plugin.trackmate.detector.lacss;
 
 import static fiji.plugin.trackmate.io.IOUtils.readBooleanAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.readDoubleAttribute;
@@ -27,8 +27,8 @@ import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.detection.SpotDetector;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
+import fiji.plugin.trackmate.detector.lacss.LacssDetectorConfigurationPanel.PretrainedModel;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
-import fiji.plugin.trackmate.lacss.LacssDetectorConfigurationPanel.PretrainedModel;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.FinalInterval;

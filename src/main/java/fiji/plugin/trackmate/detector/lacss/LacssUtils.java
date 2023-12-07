@@ -1,4 +1,4 @@
-package fiji.plugin.trackmate.lacss;
+package fiji.plugin.trackmate.detector.lacss;
 
 import java.awt.Image;
 import java.net.URL;

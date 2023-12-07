@@ -1,4 +1,4 @@
-package fiji.plugin.trackmate.lacss;
+package fiji.plugin.trackmate.detector.lacss;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
