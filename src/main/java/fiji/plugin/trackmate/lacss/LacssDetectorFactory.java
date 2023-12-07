@@ -31,6 +31,7 @@ import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.lacss.LacssDetectorConfigurationPanel.PretrainedModel;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
@@ -103,6 +104,10 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	public static final String KEY_DETECTION_THRESHOLD = "SEGMENTATION_THRESHOLD";
 	public static final Double DEFAULT_DETECTION_THRESHOLD = Double.valueOf( 0.5 );
 
+	/**  Detectiion threshold/Min Prediction scores: Default = 0.5 ;*/
+	public static final String KEY_MULTI_CHANNEL = "MULTICHANNEL";
+	public static final Boolean DEFAULT_MULTI_CHANNEL = Boolean.valueOf(true);
+
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
 			+ "This detector relies on deep-learning model Lacss to detect cells."
@@ -128,6 +133,8 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 	/** The image to operate on. Multiple frames, multiple channels. */
 	protected ImgPlus< T > img;
+
+	protected long n_ch;
 
 	protected Map< String, Object > settings;
 
@@ -209,6 +216,19 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 		final ImgPlus< T > singleTimePoint;
 
+		// override interval to include all channels if possible
+		FinalInterval itv;
+		if ((Boolean) settings.get(KEY_MULTI_CHANNEL) && (n_ch == 2 || n_ch == 3)) {
+			int ch_dim = img.dimensionIndex(Axes.CHANNEL);
+			long [] mins = interval.minAsLongArray();
+			long [] maxs = interval.maxAsLongArray();
+			mins[ch_dim] = 0;
+			maxs[ch_dim] = n_ch - 1;
+			itv = new FinalInterval(mins, maxs);
+		} else {
+			itv = new FinalInterval(interval);
+		}
+
 		if ( img.dimensionIndex( Axes.TIME ) < 0 )
 			singleTimePoint = img;
 		else
@@ -216,7 +236,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 		final LacssDetector< T > detector = new LacssDetector<T>(
 				singleTimePoint,
-				interval,
+				itv,
 				settings,
 				( Logger ) settings.get( KEY_LOGGER ),
 				getPyServer()
@@ -236,6 +256,15 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	{
 		this.img = img;
 		this.settings = settings;
+
+		int dc = img.dimensionIndex(Axes.CHANNEL);
+		if (dc < 0) {
+			n_ch = 1;
+		} else {
+			long [] shape = img.dimensionsAsLongArray();
+			n_ch = shape[img.dimensionIndex(Axes.CHANNEL)];
+		}
+
 		return checkSettings( settings );
 	}
 
@@ -259,6 +288,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		ok = ok && writeAttribute( settings, element, KEY_NMS_IOU, Double.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_DETECTION_THRESHOLD, Double.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, KEY_MULTI_CHANNEL, Boolean.class, errorHolder );	
 
 		if ( !ok )
 			errorMessage = errorHolder.toString();
@@ -281,6 +311,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		ok = ok && readDoubleAttribute( element, settings, KEY_NMS_IOU, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_SEGMENTATION_THRESHOLD, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_DETECTION_THRESHOLD, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, KEY_MULTI_CHANNEL, errorHolder );
 
 		// Read model.
 		final String str = element.getAttributeValue( KEY_LACSS_MODEL );
@@ -315,6 +346,8 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		settings.put ( KEY_DETECTION_THRESHOLD, DEFAULT_DETECTION_THRESHOLD);
 		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
 		settings.put( KEY_LACSS_CUSTOM_MODEL_FILEPATH, DEFAULT_LACSS_CUSTOM_MODEL_FILEPATH );
+		settings.put( KEY_MULTI_CHANNEL, DEFAULT_MULTI_CHANNEL );
+
 		return settings;
 	}
 
@@ -333,6 +366,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		ok = ok & checkParameter( settings, KEY_NMS_IOU, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_DETECTION_THRESHOLD, Double.class, errorHolder );		
+		ok = ok & checkParameter( settings, KEY_MULTI_CHANNEL, Boolean.class, errorHolder );		
 
 		// If we have a logger, test it is of the right class.
 		final Object loggerObj = settings.get( KEY_LOGGER );
@@ -355,6 +389,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 				KEY_DETECTION_THRESHOLD);
 		final List< String > optionalKeys = Arrays.asList(
 				KEY_LACSS_CUSTOM_MODEL_FILEPATH,
+				KEY_MULTI_CHANNEL,
 				KEY_LOGGER );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )
