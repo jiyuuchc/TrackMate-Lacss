@@ -28,7 +28,6 @@ import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -473,7 +472,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 	@Override
 	public Map< String, Object > getSettings()
 	{
-		final HashMap< String, Object > settings = new HashMap<>( 9 );
+		final Map< String, Object > settings = (new LacssDetectorFactory<>()).getDefaultSettings();
 
 		// settings.put( KEY_LACSS_PYTHON_FILEPATH, tfLacssExecutable.getText() );
 		settings.put( KEY_LACSS_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
