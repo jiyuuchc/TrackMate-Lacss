@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.JOptionPane;
+
 import com.google.protobuf.ByteString;
 
 import fiji.plugin.trackmate.Logger;
@@ -62,11 +64,12 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			final ImgPlus<T> img,
 			final Interval interval,
 			final Map< String, Object > settings,
-			final Logger logger,
+			// final Logger logger,
 			final Process pyServer) {
 		this.img = img;
 		this.interval = interval;
 		this.settings = settings;
+		Logger logger = ( Logger ) settings.get( LacssDetectorFactory.KEY_LOGGER );
 		this.logger = (logger == null) ? Logger.VOID_LOGGER : logger;
 		this.baseErrorMessage = BASE_ERROR_MESSAGE;
 		this.pyServer = pyServer;
@@ -199,7 +202,17 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 		try {
 			processFrame(rai, p_in, p_out);
 		} catch (IOException e) {
-			errorMessage = e.getLocalizedMessage();
+
+			if (! pyServer.isAlive()) { // server died for some reason
+
+				String errMsg = "The python backend died unexpectedly.";
+
+				JOptionPane.showMessageDialog(null, errMsg, "Trackmate-Lacss", JOptionPane.ERROR_MESSAGE);
+
+			}
+
+			errorMessage = baseErrorMessage + e.getLocalizedMessage();
+
 			return false;
 		}
 

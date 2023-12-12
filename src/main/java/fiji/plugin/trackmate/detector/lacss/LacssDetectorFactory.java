@@ -7,15 +7,19 @@ import static fiji.plugin.trackmate.io.IOUtils.writeAttribute;
 import static fiji.plugin.trackmate.util.TMUtils.checkMapKeys;
 import static fiji.plugin.trackmate.util.TMUtils.checkParameter;
 
+import java.awt.Color;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Element;
@@ -188,21 +192,41 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 				// String modelPath = new File(LacssDetectorFactory.class.getResource(MODEL_PATH).getFile()).getAbsolutePath();
 
 				ProcessBuilder pb = new ProcessBuilder("python", "-m", "lacss.deploy.server", modelPath);
-				pb.redirectError( ProcessBuilder.Redirect.INHERIT );
+
+				
+				// pb.redirectError( ProcessBuilder.Redirect.INHERIT );
 
 				pyServer = pb.start();
 
-				//System.err.println(pyFilePath);
-
 				addOnShutdownHook();
+
+				//System.err.println(pyFilePath);
+				class BackendLogger extends Thread {
+					public void run() {
+						BufferedReader reader = new BufferedReader(new InputStreamReader(pyServer.getErrorStream()));
+						while (pyServer.isAlive()) {							
+							try {
+								Logger.IJ_LOGGER.log(reader.readLine());
+							} catch (IOException e) {
+								Logger.IJ_LOGGER.log(e.getMessage(), Color.RED);
+								break;
+							}
+						}
+					}
+				}
+
+				new BackendLogger().start();
+
 			}
 			catch (IOException | NullPointerException e) {
-				throw(new RuntimeException("Failed to start the python engine.\n" + e.getLocalizedMessage()));
-			}
-		} 
-		else if (! pyServer.isAlive()) { // server died for some reason
 
-			throw(new RuntimeException("The python engine died unexpectedly."));
+				String errMsg = "Unable to start the python backend.\nDid you install python correctly?\n" + e.getLocalizedMessage();
+
+				JOptionPane.showMessageDialog(null, errMsg, "Trackmate-Lacss", JOptionPane.ERROR_MESSAGE);
+
+				throw(new RuntimeException("Lacss: " + errMsg));
+
+			}
 		}
 
 		return pyServer;
@@ -238,7 +262,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 				singleTimePoint,
 				itv,
 				settings,
-				( Logger ) settings.get( KEY_LOGGER ),
+				// ( Logger ) settings.get( KEY_LOGGER ),
 				getPyServer()
 		);
 
