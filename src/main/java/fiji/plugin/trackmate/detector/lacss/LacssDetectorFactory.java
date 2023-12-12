@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Element;
@@ -129,7 +128,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 	// resources
 	// static final String PY_SCRIPT_PATH = "/scripts/lacss_server.py"; // resource path to the .py
-	static final String MODEL_PATH = "/model/lacss_default.pkl"; // resource path to the model file
+	static final String DEFAULT_MODEL_PATH = "/model/lacss_default.pkl"; // resource path to the model file
 
 	/*
 	 * FIELDS
@@ -144,29 +143,38 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 	protected String errorMessage;
 
+	protected static String modelPath  = null; // the current model path
 	protected static Process pyServer = null; // the py process that does the computation
-
-	// protected static String pyFilePath;
-
-	protected static String modelPath;
+	protected static String defaultModelPath = null;
 
 	/*
 	 * METHODS
 	 */
 
-	static String exportResource(String resourceName) throws IOException
+	static String exportResource(String resourceName)
 	{
 		InputStream stream = LacssDetectorFactory.class.getResourceAsStream(resourceName);
+
 		if (stream == null) {
 			throw new RuntimeException("Cannot find resource needed: " + resourceName);
 		}
-		File outfile = File.createTempFile("lacss_", "");
-		FileUtils.copyInputStreamToFile(stream, outfile);
 
-		return outfile.getAbsolutePath();
+		try {
+
+			File outfile = File.createTempFile("lacss_", "");
+			FileUtils.copyInputStreamToFile(stream, outfile);
+
+			return outfile.getAbsolutePath();
+
+		} catch (IOException e) {
+
+			throw new RuntimeException("Lacss: Cannot extract model parameters");
+
+		}
+
 	}
 
-	private static void addOnShutdownHook()
+	private void addOnShutdownHook()
 	{
 		Runtime.getRuntime().addShutdownHook( new Thread( new Runnable()
 		{
@@ -183,24 +191,57 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		}));
 	}
 
-	public static Process getPyServer()
+	private String getModelPath() throws IOException
 	{
-		if (pyServer == null) { // the server has not been started
-			try {
-				// pyFilePath = exportResource(PY_SCRIPT_PATH);
-				modelPath = exportResource(MODEL_PATH);
-				// String modelPath = new File(LacssDetectorFactory.class.getResource(MODEL_PATH).getFile()).getAbsolutePath();
+		String targetModelPath;
+
+		if (settings.get(KEY_LACSS_MODEL) == PretrainedModel.Default) {
+			if (defaultModelPath == null) {
+
+				defaultModelPath = exportResource(DEFAULT_MODEL_PATH);
+
+			}
+
+			targetModelPath = defaultModelPath;
+
+		} else {
+
+			targetModelPath = (String) settings.get(KEY_LACSS_CUSTOM_MODEL_FILEPATH);
+
+		}
+
+		return targetModelPath;
+
+	}
+
+	public Process getPyServer()
+	{
+		try {
+			String targetModelPath = getModelPath();
+
+			if (targetModelPath != modelPath) { // need to start a new server
+
+				if (pyServer != null && pyServer.isAlive()) { // kill any running server
+					pyServer.destroy();
+	
+					while (pyServer.isAlive()) {}
+	
+					pyServer = null;
+				}
+	
+				modelPath = targetModelPath;
+			}
+
+			// Logger.IJ_LOGGER.log(modelPath);
+	
+			if (pyServer == null) {
 
 				ProcessBuilder pb = new ProcessBuilder("python", "-m", "lacss.deploy.server", modelPath);
-
-				
-				// pb.redirectError( ProcessBuilder.Redirect.INHERIT );
 
 				pyServer = pb.start();
 
 				addOnShutdownHook();
 
-				//System.err.println(pyFilePath);
 				class BackendLogger extends Thread {
 					public void run() {
 						BufferedReader reader = new BufferedReader(new InputStreamReader(pyServer.getErrorStream()));
@@ -216,17 +257,16 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 				}
 
 				new BackendLogger().start();
-
 			}
-			catch (IOException | NullPointerException e) {
+		}
+		catch (IOException | NullPointerException e) {
 
-				String errMsg = "Unable to start the python backend.\nDid you install python correctly?\n" + e.getLocalizedMessage();
+			String errMsg = "Unable to start the python backend. " + e.getLocalizedMessage();
 
-				JOptionPane.showMessageDialog(null, errMsg, "Trackmate-Lacss", JOptionPane.ERROR_MESSAGE);
+			// JOptionPane.showMessageDialog(null, errMsg, "Trackmate-Lacss", JOptionPane.ERROR_MESSAGE);
 
-				throw(new RuntimeException("Lacss: " + errMsg));
+			throw(new RuntimeException("Lacss: " + errMsg));
 
-			}
 		}
 
 		return pyServer;
