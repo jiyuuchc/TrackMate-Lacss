@@ -7,6 +7,7 @@ import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_MIN_
 import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_NMS_IOU;
 import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_REMOVE_OUT_OF_BOUNDS;
 import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_SCALING;
+import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_MULTI_CHANNEL;
 import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_SEGMENTATION_THRESHOLD;
 import static fiji.plugin.trackmate.gui.Fonts.BIG_FONT;
 import static fiji.plugin.trackmate.gui.Fonts.FONT;
@@ -87,6 +88,8 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 	private final Logger logger;
 
 	// private final JCheckBox chckbx_return_label;
+
+	private final JCheckBox chckbx_multi_channel;
 
 	private final JTextField tfCustomPath;
 
@@ -199,7 +202,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblPretrainedModel.anchor = GridBagConstraints.EAST;
 		gbcLblPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblPretrainedModel.gridx = 0;
-		gbcLblPretrainedModel.gridy = 3;
+		gbcLblPretrainedModel.gridy = 2;
 		add( lblPretrainedModel, gbcLblPretrainedModel );
 
 		cmbboxPretrainedModel = new JComboBox<>( new Vector<>( Arrays.asList( PretrainedModel.values() ) ) );
@@ -209,7 +212,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcCmbboxPretrainedModel.insets = new Insets( 0, 5, 5, 0 );
 		gbcCmbboxPretrainedModel.fill = GridBagConstraints.HORIZONTAL;
 		gbcCmbboxPretrainedModel.gridx = 1;
-		gbcCmbboxPretrainedModel.gridy = 3;
+		gbcCmbboxPretrainedModel.gridy = 2;
 		add( cmbboxPretrainedModel, gbcCmbboxPretrainedModel );
 
 		/*
@@ -223,7 +226,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblPathToCustomModel.gridwidth = 2;
 		gbcLblPathToCustomModel.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblPathToCustomModel.gridx = 0;
-		gbcLblPathToCustomModel.gridy = 4;
+		gbcLblPathToCustomModel.gridy = 3;
 		add( lblPathToCustomModel, gbcLblPathToCustomModel );
 
 		btnBrowseCustomModel = new JButton( "Browse" );
@@ -232,7 +235,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcBtnBrowseCustomModel.insets = new Insets( 0, 0, 5, 0 );
 		gbcBtnBrowseCustomModel.anchor = GridBagConstraints.SOUTHEAST;
 		gbcBtnBrowseCustomModel.gridx = 2;
-		gbcBtnBrowseCustomModel.gridy = 4;
+		gbcBtnBrowseCustomModel.gridy = 3;
 		add( btnBrowseCustomModel, gbcBtnBrowseCustomModel );
 
 		tfCustomPath = new JTextField( " " );
@@ -243,7 +246,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcTfCustomPath.insets = new Insets( 0, 5, 5, 0 );
 		gbcTfCustomPath.fill = GridBagConstraints.BOTH;
 		gbcTfCustomPath.gridx = 0;
-		gbcTfCustomPath.gridy = 5;
+		gbcTfCustomPath.gridy = 4;
 		add( tfCustomPath, gbcTfCustomPath );
 
 		/*
@@ -256,7 +259,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblMin_cell_area.anchor = GridBagConstraints.EAST;
 		gbcLblMin_cell_area.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblMin_cell_area.gridx = 0;
-		gbcLblMin_cell_area.gridy = 6;
+		gbcLblMin_cell_area.gridy = 5;
 		add( lblMin_cell_area, gbcLblMin_cell_area );
 
 		ftfmin_cell_area = new JFormattedTextField( MIN_CELL_AREA_FORMAT );
@@ -266,7 +269,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfmin_cell_area.insets = new Insets( 0, 5, 5, 5 );
 		gbcFtfmin_cell_area.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfmin_cell_area.gridx = 1;
-		gbcFtfmin_cell_area.gridy = 6;
+		gbcFtfmin_cell_area.gridy = 5;
 		add( ftfmin_cell_area, gbcFtfmin_cell_area );
 
 		final JLabel lblSpaceUnits = new JLabel( model.getSpaceUnits() );
@@ -274,7 +277,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		final GridBagConstraints gbcLblSpaceUnits = new GridBagConstraints();
 		gbcLblSpaceUnits.insets = new Insets( 0, 5, 5, 0 );
 		gbcLblSpaceUnits.gridx = 2;
-		gbcLblSpaceUnits.gridy = 6;
+		gbcLblSpaceUnits.gridy = 5;
 		add( lblSpaceUnits, gbcLblSpaceUnits );
 
 		//* Return Label */
@@ -297,7 +300,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblMin_scaling.anchor = GridBagConstraints.EAST;
 		gbcLblMin_scaling.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblMin_scaling.gridx = 0;
-		gbcLblMin_scaling.gridy = 7;
+		gbcLblMin_scaling.gridy = 6;
 		add( lblMin_scaling, gbcLblMin_scaling );
 
 		ftfmin_scaling = new JFormattedTextField( MIN_SCALING_FORMAT );
@@ -307,7 +310,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfmin_scaling.insets = new Insets( 0, 5, 5, 5 );
 		gbcFtfmin_scaling.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfmin_scaling.gridx = 1;
-		gbcFtfmin_scaling.gridy = 7;
+		gbcFtfmin_scaling.gridy = 6;
 		add( ftfmin_scaling, gbcFtfmin_scaling );
 
 		/* nms_iou: Optional iou threshold for the non-max-suppression post-processing. Default is 0, which disable non-max-suppression.  */
@@ -318,7 +321,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblNms_iou.anchor = GridBagConstraints.EAST;
 		gbcLblNms_iou.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblNms_iou.gridx = 0;
-		gbcLblNms_iou.gridy = 8;
+		gbcLblNms_iou.gridy = 7;
 		add( lblnms_iou, gbcLblNms_iou );
 
 		ftfnms_iou = new JFormattedTextField( MIN_NMS_IOU_FORMAT );
@@ -328,7 +331,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfnms_iou.insets = new Insets( 0, 5, 5, 5 );
 		gbcFtfnms_iou.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfnms_iou.gridx = 1;
-		gbcFtfnms_iou.gridy = 8;
+		gbcFtfnms_iou.gridy = 7;
 		add( ftfnms_iou, gbcFtfnms_iou );
 
 		/* 	The minimal prediction scores.: Default : 0.5 */
@@ -339,7 +342,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblSegmentation_threshold.anchor = GridBagConstraints.EAST;
 		gbcLblSegmentation_threshold.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblSegmentation_threshold.gridx = 0;
-		gbcLblSegmentation_threshold.gridy = 9;
+		gbcLblSegmentation_threshold.gridy = 8;
 		add( lblsegmentation_threshold, gbcLblSegmentation_threshold );
 
 		ftfsegmentation_threshold = new JFormattedTextField( MIN_SEGMENTATION_THRESHOLD_FORMAT );
@@ -349,7 +352,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfsegmentation_threshold.insets = new Insets( 0, 5, 5, 5 );
 		gbcFtfsegmentation_threshold.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfsegmentation_threshold.gridx = 1;
-		gbcFtfsegmentation_threshold.gridy = 9;
+		gbcFtfsegmentation_threshold.gridy = 8;
 		add( ftfsegmentation_threshold, gbcFtfsegmentation_threshold );
 
 		/*
@@ -399,11 +402,24 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		chckbxBounds.setFont( SMALL_FONT );
 		final GridBagConstraints gbcChckbxBounds = new GridBagConstraints();
 		gbcChckbxBounds.anchor = GridBagConstraints.EAST;
-		gbcChckbxBounds.gridwidth = 2;
+		//gbcChckbxBounds.gridwidth = 2;
 		gbcChckbxBounds.insets = new Insets( 0, 5, 0, 0 );
 		gbcChckbxBounds.gridx = 0;
-		gbcChckbxBounds.gridy = 10;
+		gbcChckbxBounds.gridy = 9;
 		add( chckbxBounds, gbcChckbxBounds );
+
+		//* Multi channel (default = True) */
+
+		chckbx_multi_channel = new JCheckBox( "Multi-Channel:" );
+		chckbx_multi_channel.setHorizontalTextPosition( SwingConstants.LEFT );
+		chckbx_multi_channel.setFont( SMALL_FONT );
+		final GridBagConstraints gbcChckbx_multi_channel = new GridBagConstraints();
+		gbcChckbx_multi_channel.anchor = GridBagConstraints.EAST;
+		//gbcChckbx_multi_channel.gridwidth = 2;
+		gbcChckbx_multi_channel.insets = new Insets( 0, 5, 0, 0 );
+		gbcChckbx_multi_channel.gridx = 0;
+		gbcChckbx_multi_channel.gridy = 10;
+		add( chckbx_multi_channel, gbcChckbx_multi_channel );
 
 		/*
 		 * Listeners and specificities.
@@ -463,6 +479,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_LACSS_MODEL ) );
 		ftfmin_cell_area.setValue( settings.get( KEY_MIN_CELL_AREA ) );
 		// chckbx_return_label.setSelected( ( boolean ) settings.get( KEY_RETURN_LABEL ) );
+		chckbx_multi_channel.setSelected( (boolean) settings.get( KEY_MULTI_CHANNEL ));
 		chckbxBounds.setSelected( ( boolean ) settings.get( KEY_REMOVE_OUT_OF_BOUNDS ) );
 		ftfmin_scaling.setValue( settings.get( KEY_SCALING));
 		ftfnms_iou.setValue(settings.get(KEY_NMS_IOU));
@@ -482,6 +499,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		settings.put( KEY_MIN_CELL_AREA, min_cell_area );
 		settings.put( KEY_REMOVE_OUT_OF_BOUNDS, chckbxBounds.isSelected() );
 		// settings.put( KEY_RETURN_LABEL, chckbx_return_label.isSelected() );
+		settings.put( KEY_MULTI_CHANNEL, chckbx_multi_channel.isSelected() );
 		
 		final double scaling = ( ( Number) ftfmin_scaling.getValue()).doubleValue();
 		settings.put ( KEY_SCALING, scaling );
