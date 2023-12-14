@@ -6,6 +6,7 @@ name: Maven Package
 on:
   release:
     types: [created]
+  workflow_dispatch: {}
 
 jobs:
   build:
@@ -23,7 +24,10 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+        settings-path: ${{ github.workspace }} # location for the settings.xml file  
+    - uses: s4u/maven-settings-action@v2.8.0
+      with:
+        servers: '[ {"id": "github","configuration": {"httpHeaders": {"property": {"name": "Authorization","value": "Bearer ${{ secrets.GITHUB_TOKEN }}"}}}}]'
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
