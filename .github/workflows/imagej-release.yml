@@ -1,0 +1,41 @@
+## This workflow builds the repo and uploades to ImageJ Plugin Manager/update site
+## See https://imagej.net/update-sites/automatic-uploads and https://imagej.net/update-sites/setup
+
+name: Release to ImageJ Site
+
+on:
+    release:
+      types: [created]
+    workflow_dispatch: {}
+
+jobs:
+  build:
+      
+    runs-on: ubuntu-latest
+    permissions:
+        contents: read
+        packages: write
+    env:
+        IJ_DOWNLOAD_URL: https://downloads.imagej.net/fiji/latest/fiji-linux64.zip
+        WIKI_USER: YOUR_USER_NAME ## ASK DR. YU
+        UPDATE_PASS: $  # DO NOT WRITE your password here
+        UPDATE_SITE: YOUR_UPDATE_SITE_NAME ## ASK DR. YU
+    steps:
+       - name: Checkout
+         uses: actions/checkout@v4
+       - name: Build with Maven
+         run: mvn -B package
+       - name: Install ImageJ/Fiji
+         run: | 
+           curl --silent -O ${IJ_DOWNLOAD_URL} 
+           unzip fiji-linux64.zip 
+           ./Fiji.app/ImageJ-linux64 --headless --update edit-update-site ${UPDATE_SITE} https://sites.imagej.net/${UPDATE_SITE}/ "webdav:${WIKI_USER}:${UPDATE_PASS}" .
+       - name: Install in ImageJ/Fiji (with Maven)
+         run: mvn -B install -Dscijava.app.directory=./Fiji.app -Ddelete.other.versions=true -Dscijava.ignoreDependencies=true
+       - name: Release to ImageJ update site
+         run: |
+           ./Fiji.app/ImageJ-linux64 --headless --update upload-complete-site --force ${UPDATE_SITE}
+       
+
+
+      
