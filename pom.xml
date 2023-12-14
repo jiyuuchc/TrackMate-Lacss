@@ -12,7 +12,7 @@
 	</parent>
 
 	<groupId>sc.fiji</groupId>
-	<artifactId>trackmatelacss</artifactId>
+	<artifactId>trackmate-lacss</artifactId>
 	<version>0.2.0</version>
 
 	<name>TrackMate-Lacss</name>
@@ -163,6 +163,7 @@
 						</goals>
 						<configuration>
 							<target>
+								<mkdir dir= "src/main/resources/model/"/>
 								<get src="https://huggingface.co/jiyuuchc/lacss-cnsp4-base/resolve/main/cnsp4_base.bin?download=true"
 									 dest="src/main/resources/model/lacss_default.pkl"
 									 verbose="true"
