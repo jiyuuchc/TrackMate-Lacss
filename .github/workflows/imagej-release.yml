@@ -1,7 +1,7 @@
 ## This workflow builds the repo and uploades to ImageJ Plugin Manager/update site
 ## See https://imagej.net/update-sites/automatic-uploads and https://imagej.net/update-sites/setup
 
-name: Release to ImageJ Site
+name: Release to ImageJ Update Site
 
 on:
     release:
@@ -17,14 +17,14 @@ jobs:
         packages: write
     env:
         IJ_DOWNLOAD_URL: https://downloads.imagej.net/fiji/latest/fiji-linux64.zip
-        WIKI_USER: YOUR_USER_NAME ## ASK DR. YU
+        WIKI_USER: Nick_Kuang
         UPDATE_PASS: ${{ secrets.IMAGEJ_PW }}
-        UPDATE_SITE: YOUR_UPDATE_SITE_NAME ## ASK DR. YU
+        UPDATE_SITE: TrackMate-Lacss
     steps:
        - name: Checkout
          uses: actions/checkout@v4
        - name: Build with Maven
-         run: mvn -B package
+         run: mvn -B package --file pom.xml
        - name: Install ImageJ/Fiji
          run: | 
            curl --silent -O ${IJ_DOWNLOAD_URL} 
