@@ -49,34 +49,42 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	 */
 	public static final String LACSS_DETECTOR_KEY = "LACSS_DETECTOR";
 
+	// detector parameter keys
+	public static final String NAME = "Lacss detector";
+
 	// unused
 	public static final String KEY_LACSS_MODEL = "LACSS_MODEL";
 	public static final String KEY_LACSS_PYTHON_FILEPATH = "LACSS_PYTHON_FILEPATH";
 	public static final String DEFAULT_LACSS_PYTHON_FILEPATH = "/Fiji/plugins/TrackMate/lacss/lacss.py";
 	public static final PretrainedModel DEFAULT_LACSS_MODEL = PretrainedModel.Default;
-	// public static final String KEY_TARGET_CHANNEL = "LACSS_CHANNEL";
-	// public static final int DEFAULT_TARGET_CHANNEL = 1;
 
-	/**
-	 * The key to the parameter that stores the path to the custom model file to
-	 * use with Cellpose. It must be an absolute file path.
-	 */
 	public static final String KEY_LACSS_CUSTOM_MODEL_FILEPATH = "LACSS_MODEL_FILEPATH";
 	public static final String DEFAULT_LACSS_CUSTOM_MODEL_FILEPATH = "";
+
 	public static final String KEY_RETURN_LABEL = "RETURN_LABEL";
-	public static final boolean DEFAULT_RETURN_LABEL = Boolean.valueOf(false);
+	public static final boolean DEFAULT_RETURN_LABEL = Boolean.valueOf(true);
 
-	// detector parameter keys
-	public static final String NAME = "Lacss detector";
-
-	/**
-	 * The key to the parameter that store the estimated cell diameter. Contrary
-	 * to Cellpose, this must be specified in physical units (e.g. µm) and
-	 * TrackMate wil do the conversion. Use 0 or a negative value to have
-	 * Cellpose determine this automatically (but it will take a bit longer).
-	 */
 	public static final String KEY_MIN_CELL_AREA = "MIN_CELL_AREA";
 	public static final Double DEFAULT_MIN_CELL_AREA = Double.valueOf( 0. );
+
+	public static final String KEY_REMOVE_OUT_OF_BOUNDS = "REMOVE_OUT_OF_BOUNDS"; 
+	public static final Boolean DEFAULT_REMOVE_OUT_OF_BOUNDS = Boolean.valueOf(false);
+
+	public static final String KEY_SCALING = "SCALING";
+	public static final Double DEFAULT_SCALING = Double.valueOf( 1. );
+
+	public static final String KEY_NMS_IOU = "NMS_IOU";
+	public static final Double DEFAULT_NMS_IOU = Double.valueOf( 0. );
+
+	public static final String KEY_SEGMENTATION_THRESHOLD = "SEGMENTATION_THRESHOLD";
+	public static final Double DEFAULT_SEGMENTATION_THRESHOLD = Double.valueOf( 0.5 );
+	
+	public static final String KEY_DETECTION_THRESHOLD = "DETECTION_THRESHOLD";
+	public static final Double DEFAULT_DETECTION_THRESHOLD = Double.valueOf( 0.2 );
+
+	public static final String KEY_MULTI_CHANNEL = "MULTICHANNEL";
+	public static final Boolean DEFAULT_MULTI_CHANNEL = Boolean.valueOf(true);
+
 
 	/**
 	 * The key to the parameter that stores the logger instance, to which
@@ -85,31 +93,6 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	 * 
 	 */
 	public static final String KEY_LOGGER = "LOGGER";
-
-	// remove detections for which the predicted centroid is out of image bound
-	public static final String KEY_REMOVE_OUT_OF_BOUNDS = "REMOVE_OUT_OF_BOUNDS"; 
-	public static final Boolean DEFAULT_REMOVE_OUT_OF_BOUNDS = Boolean.valueOf(false);
-
-	/** A image scaling factor. If not 1, the input image will be resized internally before fed to the model. The results 
-	 * will be resized back to the scale of the orginal input image. **/
-	public static final String KEY_SCALING = "SCALING";
-	public static final Double DEFAULT_SCALING = Double.valueOf( 1. );
-
-	/** iou threshold for the non-max-suppression post-processing. Default is 0, which disable non-max-suppression. */
-	public static final String KEY_NMS_IOU = "NMS_IOU";
-	public static final Double DEFAULT_NMS_IOU = Double.valueOf( 0. );
-
-	/**  Segmentation threshold: Default = 0.5 ;*/
-	public static final String KEY_SEGMENTATION_THRESHOLD = "SEGMENTATION_THRESHOLD";
-	public static final Double DEFAULT_SEGMENTATION_THRESHOLD = Double.valueOf( 0.5 );
-	
-	/**  Detectiion threshold/Min Prediction scores: Default = 0.5 ;*/
-	public static final String KEY_DETECTION_THRESHOLD = "SEGMENTATION_THRESHOLD";
-	public static final Double DEFAULT_DETECTION_THRESHOLD = Double.valueOf( 0.5 );
-
-	/**  Detectiion threshold/Min Prediction scores: Default = 0.5 ;*/
-	public static final String KEY_MULTI_CHANNEL = "MULTICHANNEL";
-	public static final Boolean DEFAULT_MULTI_CHANNEL = Boolean.valueOf(true);
 
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
@@ -342,11 +325,10 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	public boolean marshall( final Map< String, Object > settings, final Element element )
 	{
 		final StringBuilder errorHolder = new StringBuilder();
-		boolean ok = true; // writeTargetChannel( settings, element, errorHolder );
-		// ok = ok && writeAttribute( settings, element, KEY_LACSS_PYTHON_FILEPATH, String.class, errorHolder );
+		boolean ok = true; 
 		ok = ok && writeAttribute( settings, element, KEY_LACSS_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_MIN_CELL_AREA, Double.class, errorHolder );
-		// ok = ok && writeAttribute( settings, element, KEY_RETURN_LABEL, Boolean.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, KEY_RETURN_LABEL, Boolean.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_REMOVE_OUT_OF_BOUNDS, Boolean.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_SCALING, Double.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_NMS_IOU, Double.class, errorHolder );
@@ -366,10 +348,9 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		settings.clear();
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = true;
-		// ok = ok && readStringAttribute( element, settings, KEY_LACSS_PYTHON_FILEPATH, errorHolder );
 		ok = ok && readStringAttribute( element, settings, KEY_LACSS_CUSTOM_MODEL_FILEPATH, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_MIN_CELL_AREA, errorHolder );
-		// ok = ok && readBooleanAttribute( element, settings, KEY_RETURN_LABEL, errorHolder );
+		ok = ok && readBooleanAttribute( element, settings, KEY_RETURN_LABEL, errorHolder );
 		ok = ok && readBooleanAttribute( element, settings, KEY_REMOVE_OUT_OF_BOUNDS, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_SCALING, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_NMS_IOU, errorHolder );
@@ -397,20 +378,17 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	public Map< String, Object > getDefaultSettings()
 	{
 		final Map< String, Object > settings = new HashMap<>();
-		// settings.put( KEY_LACSS_PYTHON_FILEPATH, DEFAULT_LACSS_PYTHON_FILEPATH );
-		// settings.put( KEY_TARGET_CHANNEL, DEFAULT_TARGET_CHANNEL );
-		// settings.put( KEY_OPTIONAL_CHANNEL_2, DEFAULT_OPTIONAL_CHANNEL_2 );
 		settings.put( KEY_LACSS_MODEL, DEFAULT_LACSS_MODEL );
 		settings.put( KEY_MIN_CELL_AREA, DEFAULT_MIN_CELL_AREA );
-		// settings.put( KEY_RETURN_LABEL, DEFAULT_RETURN_LABEL );
+		settings.put( KEY_RETURN_LABEL, DEFAULT_RETURN_LABEL );
 		settings.put( KEY_REMOVE_OUT_OF_BOUNDS, false );
 		settings.put( KEY_SCALING, DEFAULT_SCALING);
 		settings.put( KEY_NMS_IOU, DEFAULT_NMS_IOU);
-		settings.put ( KEY_SEGMENTATION_THRESHOLD, DEFAULT_SEGMENTATION_THRESHOLD);
-		settings.put ( KEY_DETECTION_THRESHOLD, DEFAULT_DETECTION_THRESHOLD);
-		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
+		settings.put( KEY_SEGMENTATION_THRESHOLD, DEFAULT_SEGMENTATION_THRESHOLD);
+		settings.put( KEY_DETECTION_THRESHOLD, DEFAULT_DETECTION_THRESHOLD);
 		settings.put( KEY_LACSS_CUSTOM_MODEL_FILEPATH, DEFAULT_LACSS_CUSTOM_MODEL_FILEPATH );
 		settings.put( KEY_MULTI_CHANNEL, DEFAULT_MULTI_CHANNEL );
+		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
 
 		return settings;
 	}
@@ -420,11 +398,10 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	{
 		boolean ok = true;
 		final StringBuilder errorHolder = new StringBuilder();
-		// ok = ok & checkParameter( settings, KEY_LACSS_PYTHON_FILEPATH, String.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_LACSS_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_LACSS_MODEL, PretrainedModel.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_MIN_CELL_AREA, Double.class, errorHolder );
-		// ok = ok & checkParameter( settings, KEY_RETURN_LABEL, Boolean.class, errorHolder );
+		ok = ok & checkParameter( settings, KEY_RETURN_LABEL, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_REMOVE_OUT_OF_BOUNDS, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_SCALING, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_NMS_IOU, Double.class, errorHolder );
@@ -442,18 +419,17 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		}
 
 		final List< String > mandatoryKeys = Arrays.asList(
-				// KEY_LACSS_PYTHON_FILEPATH,
 				KEY_LACSS_MODEL,
 				KEY_MIN_CELL_AREA,
-				// KEY_RETURN_LABEL,
+				KEY_RETURN_LABEL,
 				KEY_REMOVE_OUT_OF_BOUNDS,
 				KEY_SCALING,
 				KEY_NMS_IOU,
+				KEY_MULTI_CHANNEL,
 				KEY_SEGMENTATION_THRESHOLD,
 				KEY_DETECTION_THRESHOLD);
 		final List< String > optionalKeys = Arrays.asList(
 				KEY_LACSS_CUSTOM_MODEL_FILEPATH,
-				KEY_MULTI_CHANNEL,
 				KEY_LOGGER );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )

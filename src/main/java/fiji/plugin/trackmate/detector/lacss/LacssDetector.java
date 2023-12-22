@@ -15,6 +15,7 @@ import com.google.protobuf.ByteString;
 
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Spot;
+import fiji.plugin.trackmate.SpotRoi;
 import fiji.plugin.trackmate.detection.MaskUtils;
 import fiji.plugin.trackmate.detection.SpotDetector;
 import fiji.plugin.trackmate.util.TMUtils;
@@ -41,7 +42,6 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 	protected final Interval interval;
 
-	// private final LacssSettings lacssSettings;
 	protected final Map< String, Object > settings;
 
 	private final Process pyServer;
@@ -56,9 +56,6 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 	protected List<Spot> spots;
 
-	// private String cancelReason;
-
-	// private boolean isCanceled;
 
 	public LacssDetector(
 			final ImgPlus<T> img,
@@ -144,25 +141,58 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 		st.readFully(msg_buf);
 
-		LacssMsg.Result msg = LacssMsg.Result.parseFrom(msg_buf);
+		// boolean isLabel = (boolean) settings.get(LacssDetectorFactory.KEY_RETURN_LABEL);
+		boolean isLabel = false;
+		
+		if (isLabel) {
 
-		Img<ShortType> label_img = getImgFromMsg(msg.getLabel());
-		Img<ShortType> score_img = getImgFromMsg(msg.getScore());
+			LacssMsg.Result msg = LacssMsg.Result.parseFrom(msg_buf);
 
-		final AtomicInteger max = new AtomicInteger(0);
-		Views.iterable(label_img).forEach(p -> {
-			final int val = p.getInteger();
-			if (val != 0 && val > max.get())
-				max.set(val);
-		});
-		final List<Integer> indices = new ArrayList<>(max.get());
-		for (int i = 0; i < max.get(); i++)
-			indices.add(Integer.valueOf(i + 1));
+			Img<ShortType> label_img = getImgFromMsg(msg.getLabel());
+			Img<ShortType> score_img = getImgFromMsg(msg.getScore());
 
-		final ImgLabeling<Integer, ShortType> labeling = ImgLabeling.fromImageAndLabels(label_img, indices);
-		spots = MaskUtils.fromLabelingWithROI(labeling, interval, calibration, false, score_img);
+			final AtomicInteger max = new AtomicInteger(0);
+			Views.iterable(label_img).forEach(p -> {
+				final int val = p.getInteger();
+				if (val != 0 && val > max.get())
+					max.set(val);
+			});
+			final List<Integer> indices = new ArrayList<>(max.get());
+			for (int i = 0; i < max.get(); i++)
+				indices.add(Integer.valueOf(i + 1));
 
-		return spots;
+			final ImgLabeling<Integer, ShortType> labeling = ImgLabeling.fromImageAndLabels(label_img, indices);
+			spots = MaskUtils.fromLabelingWithROI(labeling, interval, calibration, false, score_img);
+
+			return spots;
+
+		} else {
+
+			LacssMsg.PolygonResult msg = LacssMsg.PolygonResult.parseFrom(msg_buf);
+
+			List<Spot> spots = new ArrayList<>( msg.getPolygonsCount() );
+			for ( LacssMsg.Polygon polygon : msg.getPolygonsList()) {
+
+				float score = polygon.getScore();
+				List<LacssMsg.Point> points = polygon.getPointsList();
+				double [] x = new double[points.size()];
+				double [] y = new double[points.size()];
+
+				int cnt = 0;
+				for (LacssMsg.Point point : points) {
+				
+					x[cnt] = calibration[0] * ( interval.min(0) + point.getX() + 1.5 );
+					y[cnt] = calibration[1] * ( interval.min(1) + point.getY() + 1.5 );
+
+					cnt += 1;
+				}
+
+				spots.add(SpotRoi.createSpot(x, y, score * 100));
+			}
+
+			return spots;
+
+		}
 	}
 
 	private float getFloat(String key)
@@ -181,18 +211,18 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			.setNmsIou(getFloat(LacssDetectorFactory.KEY_NMS_IOU))
 			.setSegmentationThreshold(getFloat(LacssDetectorFactory.KEY_SEGMENTATION_THRESHOLD))
 			.setRemoveOutOfBound((boolean)settings.get(LacssDetectorFactory.KEY_REMOVE_OUT_OF_BOUNDS))
+			// .setReturnPolygon(! (boolean)settings.get(LacssDetectorFactory.KEY_RETURN_LABEL))
+			.setReturnPolygon(true)
 			.build();
 
 		writeInput(p_out, frame, settingMsg);
+
 		spots = readResult(p_in); // blocking
 	}
 
 	@Override
 	public boolean process() {
 		final long start = System.currentTimeMillis();
-
-		// isCanceled = false;
-		// cancelReason = null;
 
 		DataOutputStream p_out = new DataOutputStream(pyServer.getOutputStream());
 		DataInputStream p_in = new DataInputStream(pyServer.getInputStream());
