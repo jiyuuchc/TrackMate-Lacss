@@ -199,7 +199,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		final JLabel lblPretrainedModel = new JLabel( "Pretrained model:" );
 		lblPretrainedModel.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblPretrainedModel = new GridBagConstraints();
-		gbcLblPretrainedModel.anchor = GridBagConstraints.EAST;
+		gbcLblPretrainedModel.anchor = GridBagConstraints.CENTER;
 		gbcLblPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblPretrainedModel.gridx = 0;
 		gbcLblPretrainedModel.gridy = 2;
@@ -209,7 +209,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		cmbboxPretrainedModel.setFont( SMALL_FONT );
 		final GridBagConstraints gbcCmbboxPretrainedModel = new GridBagConstraints();
 		gbcCmbboxPretrainedModel.gridwidth = 2;
-		gbcCmbboxPretrainedModel.insets = new Insets( 0, 5, 5, 0 );
+		gbcCmbboxPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
 		gbcCmbboxPretrainedModel.fill = GridBagConstraints.HORIZONTAL;
 		gbcCmbboxPretrainedModel.gridx = 1;
 		gbcCmbboxPretrainedModel.gridy = 2;
@@ -232,7 +232,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		btnBrowseCustomModel = new JButton( "Browse" );
 		btnBrowseCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
 		final GridBagConstraints gbcBtnBrowseCustomModel = new GridBagConstraints();
-		gbcBtnBrowseCustomModel.insets = new Insets( 0, 0, 5, 0 );
+		gbcBtnBrowseCustomModel.insets = new Insets( 0, 0, 5, 5 );
 		gbcBtnBrowseCustomModel.anchor = GridBagConstraints.SOUTHEAST;
 		gbcBtnBrowseCustomModel.gridx = 2;
 		gbcBtnBrowseCustomModel.gridy = 3;
@@ -243,7 +243,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		tfCustomPath.setColumns( 15 );
 		final GridBagConstraints gbcTfCustomPath = new GridBagConstraints();
 		gbcTfCustomPath.gridwidth = 3;
-		gbcTfCustomPath.insets = new Insets( 0, 5, 5, 0 );
+		gbcTfCustomPath.insets = new Insets( 0, 5, 5, 5 );
 		gbcTfCustomPath.fill = GridBagConstraints.BOTH;
 		gbcTfCustomPath.gridx = 0;
 		gbcTfCustomPath.gridy = 4;
@@ -256,7 +256,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		final JLabel lblMin_cell_area = new JLabel( "Minimum Cell Area:" );
 		lblMin_cell_area.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblMin_cell_area = new GridBagConstraints();
-		gbcLblMin_cell_area.anchor = GridBagConstraints.EAST;
+		gbcLblMin_cell_area.anchor = GridBagConstraints.CENTER;
 		gbcLblMin_cell_area.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblMin_cell_area.gridx = 0;
 		gbcLblMin_cell_area.gridy = 5;
@@ -297,7 +297,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		final JLabel lblMin_scaling = new JLabel( "Scaling Factor:" );
 		lblMin_scaling.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblMin_scaling = new GridBagConstraints();
-		gbcLblMin_scaling.anchor = GridBagConstraints.EAST;
+		gbcLblMin_scaling.anchor = GridBagConstraints.CENTER;
 		gbcLblMin_scaling.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblMin_scaling.gridx = 0;
 		gbcLblMin_scaling.gridy = 6;
@@ -318,7 +318,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		final JLabel lblnms_iou = new JLabel( "IOU Treshold:" );
 		lblnms_iou.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblNms_iou = new GridBagConstraints();
-		gbcLblNms_iou.anchor = GridBagConstraints.EAST;
+		gbcLblNms_iou.anchor = GridBagConstraints.CENTER;
 		gbcLblNms_iou.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblNms_iou.gridx = 0;
 		gbcLblNms_iou.gridy = 7;
@@ -339,7 +339,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		final JLabel lblsegmentation_threshold = new JLabel( "Segmentation Treshold:" );
 		lblsegmentation_threshold.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblSegmentation_threshold = new GridBagConstraints();
-		gbcLblSegmentation_threshold.anchor = GridBagConstraints.EAST;
+		gbcLblSegmentation_threshold.anchor = GridBagConstraints.CENTER;
 		gbcLblSegmentation_threshold.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblSegmentation_threshold.gridx = 0;
 		gbcLblSegmentation_threshold.gridy = 8;
@@ -375,52 +375,45 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 				.get();
 		add( detectionPreview.getPanel(), gbcBtnPreview );
 
-		/*
-		 * Check if GPU Detected.
-		 */
-
-		// final GridBagConstraints gbcBtncheck_gpu = new GridBagConstraints();
-		// gbcBtncheck_gpu.gridwidth = 3;
-		// gbcBtncheck_gpu.fill = GridBagConstraints.BOTH;
-		// gbcBtncheck_gpu.insets = new Insets( 0, 5, 5, 5 );
-		// gbcBtncheck_gpu.gridx = 2;
-		// gbcBtncheck_gpu.gridy = 16;
-
-		// final DetectionPreview detectioncheck_gpu = DetectionPreview.create()
-		// 		.model( model )
-		// 		.settings( settings )
-		// 		.detectorFactory( new LacssDetectorFactory<>() )
-		// 		.detectionSettingsSupplier( () -> getSettings() )
-		// 		.axisLabel( "Area histogram" )
-		// 		.get();
-		// add( detectioncheck_gpu.getPanel(), gbcBtncheck_gpu );
-
 		//* Out of Bounds Check Box Button */
 
-		chckbxBounds = new JCheckBox( "Remove Out of Bounds:" );
-		chckbxBounds.setHorizontalTextPosition( SwingConstants.LEFT );
+		final JLabel textlabel_checkbox_remove_oob = new JLabel( "Remove Out of Bounds:" );
+		textlabel_checkbox_remove_oob.setFont( SMALL_FONT );
+		final GridBagConstraints gbctextlabel_checkbox_remove_oob = new GridBagConstraints();
+		gbctextlabel_checkbox_remove_oob.anchor = GridBagConstraints.CENTER;
+		gbctextlabel_checkbox_remove_oob.insets = new Insets( 0, 5, 5, 5 );
+		gbctextlabel_checkbox_remove_oob.gridx = 0;
+		gbctextlabel_checkbox_remove_oob.gridy = 9;
+		add( textlabel_checkbox_remove_oob, gbctextlabel_checkbox_remove_oob);
+
+		chckbxBounds = new JCheckBox("");
+		chckbxBounds.setHorizontalAlignment( SwingConstants.RIGHT );
 		chckbxBounds.setFont( SMALL_FONT );
 		final GridBagConstraints gbcChckbxBounds = new GridBagConstraints();
-		gbcChckbxBounds.anchor = GridBagConstraints.EAST;
-		//gbcChckbxBounds.gridwidth = 2;
 		gbcChckbxBounds.insets = new Insets( 0, 5, 0, 0 );
-		gbcChckbxBounds.gridx = 0;
+		gbcChckbxBounds.gridx = 1;
 		gbcChckbxBounds.gridy = 9;
 		add( chckbxBounds, gbcChckbxBounds );
 
 		//* Multi channel (default = True) */
 
-		chckbx_multi_channel = new JCheckBox( "Multi-Channel:" );
-		chckbx_multi_channel.setHorizontalTextPosition( SwingConstants.LEFT );
-		chckbx_multi_channel.setFont( SMALL_FONT );
-		final GridBagConstraints gbcChckbx_multi_channel = new GridBagConstraints();
-		gbcChckbx_multi_channel.anchor = GridBagConstraints.EAST;
-		//gbcChckbx_multi_channel.gridwidth = 2;
-		gbcChckbx_multi_channel.insets = new Insets( 0, 5, 0, 0 );
-		gbcChckbx_multi_channel.gridx = 0;
-		gbcChckbx_multi_channel.gridy = 10;
-		add( chckbx_multi_channel, gbcChckbx_multi_channel );
+		final JLabel textlabel_checkbox_multi_channel = new JLabel( "Multi-Channel:" );
+		textlabel_checkbox_multi_channel.setFont( SMALL_FONT );
+		final GridBagConstraints gbctxtlabel_checkbox_multi_channel = new GridBagConstraints();
+		gbctxtlabel_checkbox_multi_channel.anchor = GridBagConstraints.CENTER;
+		gbctxtlabel_checkbox_multi_channel.insets = new Insets( 0, 5, 5, 5 );
+		gbctxtlabel_checkbox_multi_channel.gridx = 0;
+		gbctxtlabel_checkbox_multi_channel.gridy = 10;
+		add( textlabel_checkbox_multi_channel, gbctxtlabel_checkbox_multi_channel);
 
+		chckbx_multi_channel = new JCheckBox("");
+		chckbx_multi_channel.setHorizontalAlignment( SwingConstants.RIGHT );
+		chckbx_multi_channel.setFont( SMALL_FONT );
+		final GridBagConstraints gbcchckbx_multi_channel = new GridBagConstraints();
+		gbcchckbx_multi_channel.insets = new Insets( 0, 5, 0, 0 );
+		gbcchckbx_multi_channel.gridx = 1;
+		gbcchckbx_multi_channel.gridy = 10;
+		add( chckbx_multi_channel, gbcchckbx_multi_channel );
 		/*
 		 * Listeners and specificities.
 		 */
