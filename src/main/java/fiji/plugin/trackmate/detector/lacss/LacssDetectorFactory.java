@@ -165,9 +165,12 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 			public void run()
 			{
 				// new File(pyFilePath).delete();
-				new File(modelPath).delete();
-
-				if (pyServer.isAlive()) {
+				if (settings.get(KEY_LACSS_MODEL) == PretrainedModel.Default)
+				{
+					new File(modelPath).delete();
+				}
+				if (pyServer.isAlive()) 
+				{
 					pyServer.destroy();
 				}
 			}
