@@ -7,12 +7,11 @@ import static fiji.plugin.trackmate.io.IOUtils.writeAttribute;
 import static fiji.plugin.trackmate.util.TMUtils.checkMapKeys;
 import static fiji.plugin.trackmate.util.TMUtils.checkParameter;
 
-import java.awt.Color;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,56 +42,8 @@ import net.imglib2.type.numeric.RealType;
 @Plugin( type = SpotDetectorFactory.class )
 public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > implements SpotDetectorFactory< T > 
 {
-
-	/*
-	 * CONSTANTS
-	 */
-	public static final String LACSS_DETECTOR_KEY = "LACSS_DETECTOR";
-
 	// detector parameter keys
 	public static final String NAME = "Lacss detector";
-
-	// unused
-	public static final String KEY_LACSS_MODEL = "LACSS_MODEL";
-	public static final String KEY_LACSS_PYTHON_FILEPATH = "LACSS_PYTHON_FILEPATH";
-	public static final String DEFAULT_LACSS_PYTHON_FILEPATH = "/Fiji/plugins/TrackMate/lacss/lacss.py";
-	public static final PretrainedModel DEFAULT_LACSS_MODEL = PretrainedModel.Default;
-
-	public static final String KEY_LACSS_CUSTOM_MODEL_FILEPATH = "LACSS_MODEL_FILEPATH";
-	public static final String DEFAULT_LACSS_CUSTOM_MODEL_FILEPATH = "";
-
-	public static final String KEY_RETURN_LABEL = "RETURN_LABEL";
-	public static final boolean DEFAULT_RETURN_LABEL = Boolean.valueOf(true);
-
-	public static final String KEY_MIN_CELL_AREA = "MIN_CELL_AREA";
-	public static final Double DEFAULT_MIN_CELL_AREA = Double.valueOf( 0. );
-
-	public static final String KEY_REMOVE_OUT_OF_BOUNDS = "REMOVE_OUT_OF_BOUNDS"; 
-	public static final Boolean DEFAULT_REMOVE_OUT_OF_BOUNDS = Boolean.valueOf(false);
-
-	public static final String KEY_SCALING = "SCALING";
-	public static final Double DEFAULT_SCALING = Double.valueOf( 1. );
-
-	public static final String KEY_NMS_IOU = "NMS_IOU";
-	public static final Double DEFAULT_NMS_IOU = Double.valueOf( 0. );
-
-	public static final String KEY_SEGMENTATION_THRESHOLD = "SEGMENTATION_THRESHOLD";
-	public static final Double DEFAULT_SEGMENTATION_THRESHOLD = Double.valueOf( 0.5 );
-	
-	public static final String KEY_DETECTION_THRESHOLD = "DETECTION_THRESHOLD";
-	public static final Double DEFAULT_DETECTION_THRESHOLD = Double.valueOf( 0.2 );
-
-	public static final String KEY_MULTI_CHANNEL = "MULTICHANNEL";
-	public static final Boolean DEFAULT_MULTI_CHANNEL = Boolean.valueOf(true);
-
-
-	/**
-	 * The key to the parameter that stores the logger instance, to which
-	 * Cellpose messages wil be sent. Values must be implementing
-	 * {@link Logger}. This parameter won't be serialized.
-	 * 
-	 */
-	public static final String KEY_LOGGER = "LOGGER";
 
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
@@ -109,10 +60,6 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-cellpose\">on the ImageJ Wiki</a>."
 			+ "</html>";
 
-	// resources
-	// static final String PY_SCRIPT_PATH = "/scripts/lacss_server.py"; // resource path to the .py
-	static final String DEFAULT_MODEL_PATH = "/model/lacss_default.pkl"; // resource path to the model file
-
 	/*
 	 * FIELDS
 	 */
@@ -126,15 +73,22 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 	protected String errorMessage;
 
-	protected static String modelPath  = null; // the current model path
-	protected static Process pyServer = null; // the py process that does the computation
 	protected static String defaultModelPath = null;
+
+	protected static LacssClient localClient = null;
+	protected static LacssClient remoteClient = null;
+
+	// static initialization
+	static {
+		exportResource("/model/lacss_default.pkl");
+		addOnShutdownHook();
+	}
 
 	/*
 	 * METHODS
 	 */
 
-	static String exportResource(String resourceName)
+	static void exportResource(String resourceName)
 	{
 		InputStream stream = LacssDetectorFactory.class.getResourceAsStream(resourceName);
 
@@ -147,7 +101,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 			File outfile = File.createTempFile("lacss_", "");
 			FileUtils.copyInputStreamToFile(stream, outfile);
 
-			return outfile.getAbsolutePath();
+			defaultModelPath = outfile.getAbsolutePath();
 
 		} catch (IOException e) {
 
@@ -157,21 +111,18 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 	}
 
-	private void addOnShutdownHook()
+	private static void addOnShutdownHook()
 	{
 		Runtime.getRuntime().addShutdownHook( new Thread( new Runnable()
 		{
 			@Override
-			public void run()
-			{
-				// new File(pyFilePath).delete();
-				if (settings.get(KEY_LACSS_MODEL) == PretrainedModel.Default)
-				{
-					new File(modelPath).delete();
-				}
-				if (pyServer.isAlive()) 
-				{
-					pyServer.destroy();
+			public void run() {
+
+				new File(defaultModelPath).delete();
+
+				if (localClient != null) {
+
+					localClient.shutdownLocalProcess();
 				}
 			}
 		}));
@@ -179,96 +130,68 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 	private String getModelPath() throws IOException
 	{
-		String targetModelPath;
+		if (settings.get(Constants.KEY_LACSS_MODEL) == PretrainedModel.Default) {
 
-		if (settings.get(KEY_LACSS_MODEL) == PretrainedModel.Default) {
-			if (defaultModelPath == null) {
-
-				defaultModelPath = exportResource(DEFAULT_MODEL_PATH);
-
-			}
-
-			targetModelPath = defaultModelPath;
+			return defaultModelPath;
 
 		} else {
 
-			targetModelPath = (String) settings.get(KEY_LACSS_CUSTOM_MODEL_FILEPATH);
+			return (String) settings.get(Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH);
 
 		}
-
-		return targetModelPath;
 
 	}
 
-	public Process getPyServer()
+	public LacssClient getClient() throws IOException 
 	{
-		try {
-			String targetModelPath = getModelPath();
+		if (settings.get(Constants.KEY_LACSS_MODEL) == PretrainedModel.Remote) {
 
-			if (targetModelPath != modelPath) { // need to start a new server
+			if (remoteClient == null) {
+				String host = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER);
+				String token = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER_TOKEN);
 
-				if (pyServer != null && pyServer.isAlive()) { // kill any running server
-					pyServer.destroy();
-	
-					while (pyServer.isAlive()) {}
-	
-					pyServer = null;
-				}
-	
-				modelPath = targetModelPath;
+				remoteClient = new LacssClient(host, token);
 			}
 
-			// Logger.IJ_LOGGER.log(modelPath);
+			return remoteClient;
+
+		} else {
+
+			String modelPath = getModelPath().trim();
+
+			if ( localClient != null) {
+				Path oldPath = Paths.get(localClient.getModelPath()).normalize();
+				Path newPath = Paths.get(modelPath).normalize();
+
+				if (! oldPath.equals(newPath) ) {
+					// Logger.IJ_LOGGER.log("Stopping previous backend.");
+					// Logger.IJ_LOGGER.log("Old parameter file : " + oldPath);
 	
-			if (pyServer == null) {
-
-				ProcessBuilder pb = new ProcessBuilder("python", "-m", "lacss.deploy.server", modelPath);
-
-				pyServer = pb.start();
-
-				addOnShutdownHook();
-
-				class BackendLogger extends Thread {
-					public void run() {
-						BufferedReader reader = new BufferedReader(new InputStreamReader(pyServer.getErrorStream()));
-						while (pyServer.isAlive()) {							
-							try {
-								Logger.IJ_LOGGER.log(reader.readLine());
-							} catch (IOException e) {
-								Logger.IJ_LOGGER.log(e.getMessage(), Color.RED);
-								break;
-							}
-						}
-					}
+					localClient.shutdownLocalProcess();
+					localClient = null;	
 				}
 
-				new BackendLogger().start();
 			}
+
+			if (localClient == null) {
+				// Logger.IJ_LOGGER.log("Startng new backend.");
+				// Logger.IJ_LOGGER.log("New parameter file : " + modelPath);
+
+				localClient = new LacssClient(modelPath);
+			}
+
+			return localClient;
 		}
-		catch (IOException | NullPointerException e) {
-
-			String errMsg = "Unable to start the python backend. " + e.getLocalizedMessage();
-
-			// JOptionPane.showMessageDialog(null, errMsg, "Trackmate-Lacss", JOptionPane.ERROR_MESSAGE);
-
-			throw(new RuntimeException("Lacss: " + errMsg));
-
-		}
-
-		return pyServer;
 	}
 
 	@Override
 	public SpotDetector< T > getDetector( final Interval interval, final int frame )
 	{
-		// final boolean simplifyContours = false; //( Boolean ) settings.get( KEY_SIMPLIFY_CONTOURS );
-		// final double[] calibration = TMUtils.getSpatialCalibration( img );
-
 		final ImgPlus< T > singleTimePoint;
 
 		// override interval to include all channels if possible
 		FinalInterval itv;
-		if ((Boolean) settings.get(KEY_MULTI_CHANNEL) && (n_ch == 2 || n_ch == 3)) {
+		if ((Boolean) settings.get(Constants.KEY_MULTI_CHANNEL) && (n_ch == 2 || n_ch == 3)) {
 			int ch_dim = img.dimensionIndex(Axes.CHANNEL);
 			long [] mins = interval.minAsLongArray();
 			long [] maxs = interval.maxAsLongArray();
@@ -284,15 +207,24 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		else
 			singleTimePoint = ImgPlusViews.hyperSlice( img, img.dimensionIndex( Axes.TIME ), frame );
 
-		final LacssDetector< T > detector = new LacssDetector<T>(
-				singleTimePoint,
-				itv,
-				settings,
-				// ( Logger ) settings.get( KEY_LOGGER ),
-				getPyServer()
-		);
+		try {
+			final LacssDetector< T > detector = new LacssDetector<T>(
+					singleTimePoint,
+					itv,
+					settings,
+					getClient()
+			);
 
-		return detector;
+			return detector;
+
+		} catch (IOException e) {
+
+			String errMsg = "Unable to start the python backend. " + e.getLocalizedMessage();
+
+			Logger.DEFAULT_LOGGER.error(errMsg);
+
+			return null;
+		}
 	}
 
 	@Override
@@ -329,15 +261,17 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	{
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = true; 
-		ok = ok && writeAttribute( settings, element, KEY_LACSS_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_MIN_CELL_AREA, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_RETURN_LABEL, Boolean.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_REMOVE_OUT_OF_BOUNDS, Boolean.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_SCALING, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_NMS_IOU, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_DETECTION_THRESHOLD, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_MULTI_CHANNEL, Boolean.class, errorHolder );	
+		ok = ok && writeAttribute( settings, element, Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, Constants.KEY_MIN_CELL_AREA, Double.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, Constants.KEY_RETURN_LABEL, Boolean.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, Constants.KEY_REMOVE_OUT_OF_BOUNDS, Boolean.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, Constants.KEY_SCALING, Double.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, Constants.KEY_NMS_IOU, Double.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, Constants.KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, Constants.KEY_DETECTION_THRESHOLD, Double.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, Constants.KEY_MULTI_CHANNEL, Boolean.class, errorHolder );	
+		ok = ok && writeAttribute( settings, element, Constants.KEY_LACSS_REMOTE_SERVER, String.class, errorHolder);
+		ok = ok && writeAttribute( settings, element, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, String.class, errorHolder);
 
 		if ( !ok )
 			errorMessage = errorHolder.toString();
@@ -351,21 +285,23 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		settings.clear();
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = true;
-		ok = ok && readStringAttribute( element, settings, KEY_LACSS_CUSTOM_MODEL_FILEPATH, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, KEY_MIN_CELL_AREA, errorHolder );
-		ok = ok && readBooleanAttribute( element, settings, KEY_RETURN_LABEL, errorHolder );
-		ok = ok && readBooleanAttribute( element, settings, KEY_REMOVE_OUT_OF_BOUNDS, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, KEY_SCALING, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, KEY_NMS_IOU, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, KEY_SEGMENTATION_THRESHOLD, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, KEY_DETECTION_THRESHOLD, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, KEY_MULTI_CHANNEL, errorHolder );
+		ok = ok && readStringAttribute( element, settings, Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_MIN_CELL_AREA, errorHolder );
+		ok = ok && readBooleanAttribute( element, settings, Constants.KEY_RETURN_LABEL, errorHolder );
+		ok = ok && readBooleanAttribute( element, settings, Constants.KEY_REMOVE_OUT_OF_BOUNDS, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_SCALING, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_NMS_IOU, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_SEGMENTATION_THRESHOLD, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_DETECTION_THRESHOLD, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_MULTI_CHANNEL, errorHolder );
+		ok = ok && readStringAttribute( element, settings, Constants.KEY_LACSS_REMOTE_SERVER, errorHolder);
+		ok = ok && readStringAttribute( element, settings, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, errorHolder);
 
 		// Read model.
-		final String str = element.getAttributeValue( KEY_LACSS_MODEL );
+		final String str = element.getAttributeValue( Constants.KEY_LACSS_MODEL );
 		if ( null == str )
 		{
-			errorHolder.append( "Attribute " + KEY_LACSS_MODEL + " could not be found in XML element.\n" );
+			errorHolder.append( "Attribute " + Constants.KEY_LACSS_MODEL + " could not be found in XML element.\n" );
 			ok = false;
 		}
 		return checkSettings( settings );
@@ -381,17 +317,20 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	public Map< String, Object > getDefaultSettings()
 	{
 		final Map< String, Object > settings = new HashMap<>();
-		settings.put( KEY_LACSS_MODEL, DEFAULT_LACSS_MODEL );
-		settings.put( KEY_MIN_CELL_AREA, DEFAULT_MIN_CELL_AREA );
-		settings.put( KEY_RETURN_LABEL, DEFAULT_RETURN_LABEL );
-		settings.put( KEY_REMOVE_OUT_OF_BOUNDS, false );
-		settings.put( KEY_SCALING, DEFAULT_SCALING);
-		settings.put( KEY_NMS_IOU, DEFAULT_NMS_IOU);
-		settings.put( KEY_SEGMENTATION_THRESHOLD, DEFAULT_SEGMENTATION_THRESHOLD);
-		settings.put( KEY_DETECTION_THRESHOLD, DEFAULT_DETECTION_THRESHOLD);
-		settings.put( KEY_LACSS_CUSTOM_MODEL_FILEPATH, DEFAULT_LACSS_CUSTOM_MODEL_FILEPATH );
-		settings.put( KEY_MULTI_CHANNEL, DEFAULT_MULTI_CHANNEL );
-		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
+		settings.put( Constants.KEY_LACSS_MODEL, Constants.DEFAULT_LACSS_MODEL );
+		settings.put( Constants.KEY_MIN_CELL_AREA, Constants.DEFAULT_MIN_CELL_AREA );
+		settings.put( Constants.KEY_RETURN_LABEL, Constants.DEFAULT_RETURN_LABEL );
+		settings.put( Constants.KEY_REMOVE_OUT_OF_BOUNDS, false );
+		settings.put( Constants.KEY_SCALING, Constants.DEFAULT_SCALING);
+		settings.put( Constants.KEY_NMS_IOU, Constants.DEFAULT_NMS_IOU);
+		settings.put( Constants.KEY_SEGMENTATION_THRESHOLD, Constants.DEFAULT_SEGMENTATION_THRESHOLD);
+		settings.put( Constants.KEY_DETECTION_THRESHOLD, Constants.DEFAULT_DETECTION_THRESHOLD);
+		settings.put( Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH, Constants.DEFAULT_LACSS_CUSTOM_MODEL_FILEPATH );
+		settings.put( Constants.KEY_MULTI_CHANNEL, Constants.DEFAULT_MULTI_CHANNEL );
+		settings.put( Constants.KEY_LACSS_REMOTE_SERVER, Constants.DEFAULT_LACSS_REMOTE_SERVER );
+		settings.put( Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, Constants.DEFAULT_LACSS_REMOTE_SERVER_TOKEN );
+
+		settings.put( Constants.KEY_LOGGER, Logger.DEFAULT_LOGGER );
 
 		return settings;
 	}
@@ -401,39 +340,43 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	{
 		boolean ok = true;
 		final StringBuilder errorHolder = new StringBuilder();
-		ok = ok & checkParameter( settings, KEY_LACSS_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_LACSS_MODEL, PretrainedModel.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_MIN_CELL_AREA, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_RETURN_LABEL, Boolean.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_REMOVE_OUT_OF_BOUNDS, Boolean.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_SCALING, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_NMS_IOU, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_DETECTION_THRESHOLD, Double.class, errorHolder );		
-		ok = ok & checkParameter( settings, KEY_MULTI_CHANNEL, Boolean.class, errorHolder );		
+		ok = ok & checkParameter( settings, Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
+		ok = ok & checkParameter( settings, Constants.KEY_LACSS_MODEL, PretrainedModel.class, errorHolder );
+		ok = ok & checkParameter( settings, Constants.KEY_MIN_CELL_AREA, Double.class, errorHolder );
+		ok = ok & checkParameter( settings, Constants.KEY_RETURN_LABEL, Boolean.class, errorHolder );
+		ok = ok & checkParameter( settings, Constants.KEY_REMOVE_OUT_OF_BOUNDS, Boolean.class, errorHolder );
+		ok = ok & checkParameter( settings, Constants.KEY_SCALING, Double.class, errorHolder );
+		ok = ok & checkParameter( settings, Constants.KEY_NMS_IOU, Double.class, errorHolder );
+		ok = ok & checkParameter( settings, Constants.KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
+		ok = ok & checkParameter( settings, Constants.KEY_DETECTION_THRESHOLD, Double.class, errorHolder );		
+		ok = ok & checkParameter( settings, Constants.KEY_MULTI_CHANNEL, Boolean.class, errorHolder );		
+		ok = ok & checkParameter( settings, Constants.KEY_LACSS_REMOTE_SERVER, String.class, errorHolder );		
+		ok = ok & checkParameter( settings, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, String.class, errorHolder );		
 
 		// If we have a logger, test it is of the right class.
-		final Object loggerObj = settings.get( KEY_LOGGER );
+		final Object loggerObj = settings.get( Constants.KEY_LOGGER );
 		if ( loggerObj != null && !Logger.class.isInstance( loggerObj ) )
 		{
-			errorHolder.append( "Value for parameter " + KEY_LOGGER + " is not of the right class. "
+			errorHolder.append( "Value for parameter " + Constants.KEY_LOGGER + " is not of the right class. "
 					+ "Expected " + Logger.class.getName() + ", got " + loggerObj.getClass().getName() + ".\n" );
 			ok = false;
 		}
 
 		final List< String > mandatoryKeys = Arrays.asList(
-				KEY_LACSS_MODEL,
-				KEY_MIN_CELL_AREA,
-				KEY_RETURN_LABEL,
-				KEY_REMOVE_OUT_OF_BOUNDS,
-				KEY_SCALING,
-				KEY_NMS_IOU,
-				KEY_MULTI_CHANNEL,
-				KEY_SEGMENTATION_THRESHOLD,
-				KEY_DETECTION_THRESHOLD);
+				Constants.KEY_LACSS_MODEL,
+				Constants.KEY_MIN_CELL_AREA,
+				Constants.KEY_RETURN_LABEL,
+				Constants.KEY_REMOVE_OUT_OF_BOUNDS,
+				Constants.KEY_SCALING,
+				Constants.KEY_NMS_IOU,
+				Constants.KEY_MULTI_CHANNEL,
+				Constants.KEY_SEGMENTATION_THRESHOLD,
+				Constants.KEY_DETECTION_THRESHOLD);
 		final List< String > optionalKeys = Arrays.asList(
-				KEY_LACSS_CUSTOM_MODEL_FILEPATH,
-				KEY_LOGGER );
+				Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH,
+				Constants.KEY_LACSS_REMOTE_SERVER,
+				Constants.KEY_LACSS_REMOTE_SERVER_TOKEN,
+				Constants.KEY_LOGGER );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();
@@ -456,7 +399,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	@Override
 	public String getKey()
 	{
-		return LACSS_DETECTOR_KEY;
+		return Constants.LACSS_DETECTOR_KEY;
 	}
 
 	@Override
