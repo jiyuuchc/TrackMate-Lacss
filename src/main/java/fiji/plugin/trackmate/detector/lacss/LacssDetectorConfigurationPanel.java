@@ -1,14 +1,5 @@
 package fiji.plugin.trackmate.detector.lacss;
 
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_LACSS_CUSTOM_MODEL_FILEPATH;
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_LACSS_MODEL;
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_LOGGER;
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_MIN_CELL_AREA;
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_NMS_IOU;
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_REMOVE_OUT_OF_BOUNDS;
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_SCALING;
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_MULTI_CHANNEL;
-import static fiji.plugin.trackmate.detector.lacss.LacssDetectorFactory.KEY_SEGMENTATION_THRESHOLD;
 import static fiji.plugin.trackmate.gui.Fonts.BIG_FONT;
 import static fiji.plugin.trackmate.gui.Fonts.FONT;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
@@ -92,6 +83,10 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 	private final JCheckBox chckbx_multi_channel;
 
 	private final JTextField tfCustomPath;
+
+	private final JTextField tfRemoteServer;
+
+	private final JTextField tfRemoteServerToken;
 
 	private final JButton btnBrowseCustomModel;
 
@@ -248,6 +243,52 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcTfCustomPath.gridx = 0;
 		gbcTfCustomPath.gridy = 4;
 		add( tfCustomPath, gbcTfCustomPath );
+
+		/*
+		 * Remote server.
+		 */
+
+		final JLabel lblRemoteServer = new JLabel( "Remote server:" );
+		lblPathToCustomModel.setFont( SMALL_FONT );
+		final GridBagConstraints gbcLblRemoteServer = new GridBagConstraints();
+		gbcLblRemoteServer.anchor = GridBagConstraints.SOUTHWEST;
+		gbcLblRemoteServer.gridwidth = 2;
+		gbcLblRemoteServer.insets = new Insets( 0, 5, 5, 5 );
+		gbcLblRemoteServer.gridx = 0;
+		gbcLblRemoteServer.gridy = 3;
+		add( lblRemoteServer, gbcLblRemoteServer );
+
+		tfRemoteServer = new JTextField( " " );
+		tfRemoteServer.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
+		tfRemoteServer.setColumns( 15 );
+		final GridBagConstraints gbcTfRemoteServer = new GridBagConstraints();
+		gbcTfRemoteServer.gridwidth = 3;
+		gbcTfRemoteServer.insets = new Insets( 0, 5, 5, 5 );
+		gbcTfRemoteServer.fill = GridBagConstraints.BOTH;
+		gbcTfRemoteServer.gridx = 1;
+		gbcTfRemoteServer.gridy = 3;
+		add( tfRemoteServer, gbcTfRemoteServer );
+
+		final JLabel lblRemoteServerToken = new JLabel( "Access token:" );
+		lblPathToCustomModel.setFont( SMALL_FONT );
+		final GridBagConstraints gbcLblRemoteServerToken = new GridBagConstraints();
+		gbcLblRemoteServerToken.anchor = GridBagConstraints.SOUTHWEST;
+		gbcLblRemoteServerToken.gridwidth = 2;
+		gbcLblRemoteServerToken.insets = new Insets( 0, 5, 5, 5 );
+		gbcLblRemoteServerToken.gridx = 0;
+		gbcLblRemoteServerToken.gridy = 4;
+		add( lblRemoteServerToken, gbcLblRemoteServerToken );
+ 
+		tfRemoteServerToken = new JTextField( " " );
+		tfRemoteServerToken.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
+		tfRemoteServerToken.setColumns( 15 );
+		final GridBagConstraints gbcTfRemoteServerToken = new GridBagConstraints();
+		gbcTfRemoteServerToken.gridwidth = 3;
+		gbcTfRemoteServerToken.insets = new Insets( 0, 5, 5, 5 );
+		gbcTfRemoteServerToken.fill = GridBagConstraints.BOTH;
+		gbcTfRemoteServerToken.gridx = 1;
+		gbcTfRemoteServerToken.gridy = 4;
+		add( tfRemoteServerToken, gbcTfRemoteServerToken );
 
 		/*
 		* Min Cell Area.
@@ -420,15 +461,18 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 
 		final ItemListener l3 = e -> {
 			final boolean isCustom = cmbboxPretrainedModel.getSelectedItem() == PretrainedModel.CUSTOM;
+			final boolean isRemote = cmbboxPretrainedModel.getSelectedItem() == PretrainedModel.Remote;
 			tfCustomPath.setVisible( isCustom );
 			lblPathToCustomModel.setVisible( isCustom );
 			btnBrowseCustomModel.setVisible( isCustom );
+			lblRemoteServer.setVisible( isRemote );
+			tfRemoteServer.setVisible( isRemote );
+			lblRemoteServerToken.setVisible( isRemote );
+			tfRemoteServerToken.setVisible( isRemote );
 		};
 		cmbboxPretrainedModel.addItemListener( l3 );
 		l3.itemStateChanged( null );
 
-		// btnBrowseLacssPath.addActionListener( l -> browseLacssPath() );
-		
 		btnBrowseCustomModel.addActionListener( l -> browseCustomModelPath() );
 	}
 
@@ -467,16 +511,18 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 	@Override
 	public void setSettings( final Map< String, Object > settings )
 	{
-		// tfLacssExecutable.setText( ( String ) settings.get( KEY_LACSS_PYTHON_FILEPATH ) );
-		tfCustomPath.setText( ( String ) settings.get( KEY_LACSS_CUSTOM_MODEL_FILEPATH ) );
-		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_LACSS_MODEL ) );
-		ftfmin_cell_area.setValue( settings.get( KEY_MIN_CELL_AREA ) );
-		// chckbx_return_label.setSelected( ( boolean ) settings.get( KEY_RETURN_LABEL ) );
-		chckbx_multi_channel.setSelected( (boolean) settings.get( KEY_MULTI_CHANNEL ));
-		chckbxBounds.setSelected( ( boolean ) settings.get( KEY_REMOVE_OUT_OF_BOUNDS ) );
-		ftfmin_scaling.setValue( settings.get( KEY_SCALING));
-		ftfnms_iou.setValue(settings.get(KEY_NMS_IOU));
-		ftfsegmentation_threshold.setValue(settings.get(KEY_SEGMENTATION_THRESHOLD));
+		// tfLacssExecutable.setText( ( String ) settings.get( Constants.KEY_LACSS_PYTHON_FILEPATH ) );
+		tfCustomPath.setText( ( String ) settings.get( Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH ) );
+		tfRemoteServer.setText( ( String ) settings.get( Constants.KEY_LACSS_REMOTE_SERVER ) );
+		tfRemoteServerToken.setText( ( String ) settings.get( Constants.KEY_LACSS_REMOTE_SERVER_TOKEN ) );
+		cmbboxPretrainedModel.setSelectedItem( settings.get( Constants.KEY_LACSS_MODEL ) );
+		ftfmin_cell_area.setValue( settings.get( Constants.KEY_MIN_CELL_AREA ) );
+		// chckbx_return_label.setSelected( ( boolean ) settings.get( Constants.KEY_RETURN_LABEL ) );
+		chckbx_multi_channel.setSelected( (boolean) settings.get( Constants.KEY_MULTI_CHANNEL ));
+		chckbxBounds.setSelected( ( boolean ) settings.get( Constants.KEY_REMOVE_OUT_OF_BOUNDS ) );
+		ftfmin_scaling.setValue( settings.get( Constants.KEY_SCALING));
+		ftfnms_iou.setValue( settings.get( Constants.KEY_NMS_IOU ) );
+		ftfsegmentation_threshold.setValue( settings.get ( Constants.KEY_SEGMENTATION_THRESHOLD ) );
 	}
 
 	@Override
@@ -484,24 +530,25 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 	{
 		final Map< String, Object > settings = (new LacssDetectorFactory<>()).getDefaultSettings();
 
-		// settings.put( KEY_LACSS_PYTHON_FILEPATH, tfLacssExecutable.getText() );
-		settings.put( KEY_LACSS_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
-		settings.put( KEY_LACSS_MODEL, cmbboxPretrainedModel.getSelectedItem() );
+		settings.put( Constants.KEY_LACSS_MODEL, cmbboxPretrainedModel.getSelectedItem() );
+		settings.put( Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
+		settings.put( Constants.KEY_LACSS_REMOTE_SERVER, tfRemoteServer.getText() );
+		settings.put( Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, tfRemoteServerToken.getText() );
 
 		final double min_cell_area = ( ( Number ) ftfmin_cell_area.getValue() ).doubleValue();
-		settings.put( KEY_MIN_CELL_AREA, min_cell_area );
-		settings.put( KEY_REMOVE_OUT_OF_BOUNDS, chckbxBounds.isSelected() );
-		// settings.put( KEY_RETURN_LABEL, chckbx_return_label.isSelected() );
-		settings.put( KEY_MULTI_CHANNEL, chckbx_multi_channel.isSelected() );
+		settings.put( Constants.KEY_MIN_CELL_AREA, min_cell_area );
+		settings.put( Constants.KEY_REMOVE_OUT_OF_BOUNDS, chckbxBounds.isSelected() );
+		// settings.put( Constants.KEY_RETURN_LABEL, chckbx_return_label.isSelected() );
+		settings.put( Constants.KEY_MULTI_CHANNEL, chckbx_multi_channel.isSelected() );
 		
 		final double scaling = ( ( Number) ftfmin_scaling.getValue()).doubleValue();
-		settings.put ( KEY_SCALING, scaling );
+		settings.put ( Constants.KEY_SCALING, scaling );
 		final double nms_iou = ((Number) ftfnms_iou.getValue()).doubleValue();
-		settings.put (KEY_NMS_IOU, nms_iou);
+		settings.put ( Constants.KEY_NMS_IOU, nms_iou );
 		final double segmentation_threshold = ((Number) ftfsegmentation_threshold.getValue()).doubleValue();
-		settings.put (KEY_SEGMENTATION_THRESHOLD, segmentation_threshold);
+		settings.put ( Constants.KEY_SEGMENTATION_THRESHOLD, segmentation_threshold);
 
-		settings.put( KEY_LOGGER, logger );
+		settings.put( Constants.KEY_LOGGER, logger );
 
 		return settings;
 	}
@@ -513,7 +560,8 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 	public enum PretrainedModel
 	{
 		Default("Default", ""),
-		CUSTOM( "Custom", "" );
+		CUSTOM( "Custom", "" ),
+		Remote("Remote", "");
 
 		private final String name;
 
