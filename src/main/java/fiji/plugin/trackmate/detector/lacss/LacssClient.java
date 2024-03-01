@@ -20,9 +20,15 @@ public class LacssClient {
     }
 
     LacssClient(String host, String token) {
+        if (token != null && token.trim().length() == 0) {
+            token = null;
+        }
         this.token = token;
-        this.channel = Grpc.newChannelBuilder(host, InsecureChannelCredentials.create()).build();
+        
+        this.channel = Grpc.newChannelBuilder(host, InsecureChannelCredentials.create())
+            .build();
         this.blockingStub = LacssGrpc.newBlockingStub(channel);
+        
         this.localProcess = null;
         this.modelPath = null;
     }
@@ -30,12 +36,12 @@ public class LacssClient {
     LacssClient(String modelPath) throws IOException {
         ProcessBuilder pb = new ProcessBuilder("python", "-m", "lacss.deploy.remote_server", "--local", modelPath);
         pb.inheritIO().redirectErrorStream();
-        localProcess = pb.start();
+        this.localProcess = pb.start();
 
         String target = "localhost:50051";
-        channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create())
+        this.channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create())
             .build();
-        blockingStub = LacssGrpc.newBlockingStub(channel)
+        this.blockingStub = LacssGrpc.newBlockingStub(channel)
             .withWaitForReady();
 
         this.token = null;
@@ -52,14 +58,14 @@ public class LacssClient {
     }
 
     public LacssMsg.PolygonResult runDetection(LacssMsg.Input inputs) {
+        LacssBlockingStub stub = blockingStub.withDeadlineAfter(90, TimeUnit.SECONDS);
+
         if (token != null) {
             LacssTokenCredentials callCredentials = new LacssTokenCredentials(token);
-            return blockingStub
-                    .withCallCredentials(callCredentials)
-                    .runDetection(inputs);
-        } else {
-            return blockingStub.runDetection(inputs);
+            stub = stub.withCallCredentials(callCredentials);
         }
+
+        return stub.runDetection(inputs);
     }
 
     @Override
@@ -67,5 +73,14 @@ public class LacssClient {
         try {
             channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {}
+    }
+
+    @Override
+    public String toString() {
+        if (modelPath != null) {
+            return "Local: " + getModelPath();
+        } else {
+            return "Remote: " + blockingStub.getChannel() + ":" + token;
+        }
     }
 }

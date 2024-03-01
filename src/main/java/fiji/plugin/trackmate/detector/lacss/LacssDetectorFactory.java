@@ -146,12 +146,13 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	{
 		if (settings.get(Constants.KEY_LACSS_MODEL) == PretrainedModel.Remote) {
 
-			if (remoteClient == null) {
-				String host = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER);
-				String token = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER_TOKEN);
+			String host = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER);
+			String token = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER_TOKEN);
 
-				remoteClient = new LacssClient(host, token);
-			}
+			remoteClient = new LacssClient(host, token);
+
+			// Logger.IJ_LOGGER.log("Trying connecting to: " + host);
+			// Logger.IJ_LOGGER.log("Using client object: " + remoteClient.toString());
 
 			return remoteClient;
 
@@ -221,7 +222,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 			String errMsg = "Unable to start the python backend. " + e.getLocalizedMessage();
 
-			Logger.DEFAULT_LOGGER.error(errMsg);
+			Logger.IJ_LOGGER.error(errMsg);
 
 			return null;
 		}

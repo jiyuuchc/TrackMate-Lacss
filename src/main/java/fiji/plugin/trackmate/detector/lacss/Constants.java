@@ -16,7 +16,7 @@ public class Constants {
 	public static final String DEFAULT_LACSS_CUSTOM_MODEL_FILEPATH = "";
 
 	public static final String KEY_LACSS_REMOTE_SERVER = "LACSS_REMOTE_SERVER";
-	public static final String DEFAULT_LACSS_REMOTE_SERVER = "localhost:50051";
+	public static final String DEFAULT_LACSS_REMOTE_SERVER = "localhost:7051";
 
 	public static final String KEY_LACSS_REMOTE_SERVER_TOKEN = "LACSS_REMOTE_SERVER_TOKEN";
 	public static final String DEFAULT_LACSS_REMOTE_SERVER_TOKEN = "";

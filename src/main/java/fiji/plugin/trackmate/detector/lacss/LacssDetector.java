@@ -48,7 +48,8 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			final ImgPlus<T> img,
 			final Interval interval,
 			final Map< String, Object > settings,
-			final LacssClient client) {
+			final LacssClient client ) 
+	{
 		this.img = img;
 		this.interval = interval;
 		this.settings = settings;
@@ -58,7 +59,8 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 		this.client = client;
 	}
 
-	private boolean getDetections(RandomAccessibleInterval<T> crop, LacssMsg.Settings settings) {
+	private boolean getDetections(RandomAccessibleInterval<T> crop, LacssMsg.Settings settings)
+	{
 		long[] dims = crop.dimensionsAsLongArray();
 		long n_ch = 1;
 		int ch_c = img.dimensionIndex(Axes.CHANNEL);
@@ -97,12 +99,16 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 		LacssMsg.PolygonResult msg;
 		try {
+
+			// Logger.IJ_LOGGER.log("Connecting to server" + client.toString());
+
 			msg = client.runDetection(inputs);
+
 		} catch (StatusRuntimeException e) {
 			// logger.error(BASE_ERROR_MESSAGE + "Unable to communicate with the server.");
 			logger.error(BASE_ERROR_MESSAGE + e.getLocalizedMessage());
 			return false;
-		}
+		} 
 
 		spots = new ArrayList<>( msg.getPolygonsCount() );
 		for ( LacssMsg.Polygon polygon : msg.getPolygonsList()) {
