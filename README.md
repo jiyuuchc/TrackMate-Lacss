@@ -2,7 +2,9 @@
 
 A plugin of a plugin. 
 
-This software adds a new cell detector to [TrackMate](https://imagej.net/plugins/trackmate/index), a cell/object tracker plugin for [ImageJ](https://imagej.net/). The detector uses a pretrained [deep-learning model](https://github.com/jiyuuchc/lacss) to detect and segment cells.
+This software adds a new cell detector to [TrackMate](https://imagej.net/plugins/trackmate/index), a cell/object tracker plugin for [FIJI/ImageJ](https://imagej.net/software/fiji/). 
+
+The detector uses a pretrained deep-learning model [Lacss](https://github.com/jiyuuchc/lacss) to find and segment cells.
 
 ### Installation
 
@@ -13,23 +15,25 @@ This software adds a new cell detector to [TrackMate](https://imagej.net/plugins
 
 ### How does it work
 
-Lacss runs as a GRPC server at a TCP port (default: 50051). This small plugin communicates with the server by sending/receiving messages encoded in [protobuf](https://protobuf.dev/).
+Lacss runs as an [GRPC](https://grpc.io/) server listening at a TCP port (default: 50051). This simple Java plugin communicates with the server by sending/receiving messages encoded in [protobuf](https://protobuf.dev/).
 
-Step 1: Start the Lacss server
+### Usage
+**Step 1:** Start the Lacss server
 
 ```
-python -m lacss.deploy.remote_server <model_file>
+python -m lacss.deploy.remote_server --modelpath=<model_file>
 ```
 
-You can find the URLs of several pre-trained model files by running:
+*Run the command without argments to get a list of download URLs for model files*
+
 ```
-python -m lacss.deploy.remote_server --help
+python -m lacss.deploy.remote_server
 ```
 
-Step 2: In FIJI, start TrackMate from Menu: Plugins/Tracking/TrackMate
+**Step 2:** Start TrackMate in FIJI. At the detector selection page, select "Lacss detector" from the dropdown menu.
 
-Step 3: At the detector selection page, select "Lacss detector" from the dropdown menu.
+<img src="https://github.com/jiyuuchc/Trackmate-Lacss/raw/main/.github/images/trackmate_img_1.png" height="350">
 
-Step 4: A the next configuration page, provide the correct server address.
+**Step 3:** At the next configuration page, provide the correct server address.
 
-| <img src="https://github.com/jiyuuchc/Trackmate-Lacss/raw/main/.github/images/trackmate_img_1.png" height="350"> | <img src="https://github.com/jiyuuchc/Trackmate-Lacss/raw/main/.github/images/trackmate_img_2.png" height="350"> |
+<img src="https://github.com/jiyuuchc/Trackmate-Lacss/raw/main/.github/images/trackmate_img_2.png" height="350">

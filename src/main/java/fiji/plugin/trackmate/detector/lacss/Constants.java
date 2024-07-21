@@ -25,7 +25,7 @@ public class Constants {
 	public static final Double DEFAULT_SEGMENTATION_THRESHOLD = Double.valueOf( 0.5 );
 	
 	public static final String KEY_DETECTION_THRESHOLD = "DETECTION_THRESHOLD";
-	public static final Double DEFAULT_DETECTION_THRESHOLD = Double.valueOf( 0.);
+	public static final Double DEFAULT_DETECTION_THRESHOLD = Double.valueOf( 0.5 );
 
 	public static final String KEY_MULTI_CHANNEL = "MULTICHANNEL";
 	public static final Boolean DEFAULT_MULTI_CHANNEL = Boolean.valueOf(true);
