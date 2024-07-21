@@ -13,10 +13,10 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>trackmate-lacss</artifactId>
-	<version>0.2.1</version>
+	<version>0.3.0</version>
 
 	<name>TrackMate-Lacss</name>
-	<description>TrackMate detector based on Lacss model.</description>
+	<description>TrackMate detector based on the Lacss model.</description>
 	<url>https://github.com/jiyuuchc/TrackMate-Lacss</url>
 	<inceptionYear>2023</inceptionYear>
 	<organization>
@@ -184,7 +184,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
+				<!-- <executions>
 					<execution>
 						<id>download-files</id>
 						<phase>process-sources</phase>
@@ -201,7 +201,7 @@
 							</target>
 						</configuration>
 					</execution>
-				</executions>
+				</executions> -->
 			</plugin>
 			<plugin>
 				<groupId>org.xolstice.maven.plugins</groupId>
