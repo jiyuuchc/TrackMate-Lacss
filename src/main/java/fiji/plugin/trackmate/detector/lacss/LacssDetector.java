@@ -151,7 +151,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			.setScaling(getFloat(Constants.KEY_SCALING))
 			.setNmsIou(getFloat(Constants.KEY_NMS_IOU))
 			.setSegmentationThreshold(getFloat(Constants.KEY_SEGMENTATION_THRESHOLD))
-			.setRemoveOutOfBound((boolean)settings.get(Constants.KEY_REMOVE_OUT_OF_BOUNDS))
+			.setDetectionThreshold(getFloat(Constants.KEY_DETECTION_THRESHOLD))
 			.setReturnPolygon(true)
 			.build();
 
