@@ -104,8 +104,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 			msg = client.runDetection(inputs);
 
-		} catch (StatusRuntimeException e) {
-			// logger.error(BASE_ERROR_MESSAGE + "Unable to communicate with the server.");
+		} catch (StatusRuntimeException|InterruptedException e) {
 			logger.error(BASE_ERROR_MESSAGE + e.getLocalizedMessage());
 			return false;
 		} 

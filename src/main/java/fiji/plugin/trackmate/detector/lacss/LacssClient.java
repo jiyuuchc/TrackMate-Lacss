@@ -9,8 +9,7 @@ import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 
 public class LacssClient {
-    private final ManagedChannel channel;
-    private final LacssBlockingStub blockingStub;
+    private final String host;
     private final String token;
     private final Process localProcess;
     private final String modelPath;
@@ -24,11 +23,7 @@ public class LacssClient {
             token = null;
         }
         this.token = token;
-        
-        this.channel = Grpc.newChannelBuilder(host, InsecureChannelCredentials.create())
-            .build();
-        this.blockingStub = LacssGrpc.newBlockingStub(channel);
-        
+        this.host = host;
         this.localProcess = null;
         this.modelPath = null;
     }
@@ -38,13 +33,9 @@ public class LacssClient {
         pb.inheritIO().redirectErrorStream();
         this.localProcess = pb.start();
 
-        String target = "localhost:50051";
-        this.channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create())
-            .build();
-        this.blockingStub = LacssGrpc.newBlockingStub(channel)
-            .withWaitForReady();
-
         this.token = null;
+        this.host = null;
+
         this.modelPath = modelPath;
     }
 
@@ -57,22 +48,31 @@ public class LacssClient {
         }
     }
 
-    public LacssMsg.PolygonResult runDetection(LacssMsg.Input inputs) {
-        LacssBlockingStub stub = blockingStub.withDeadlineAfter(90, TimeUnit.SECONDS);
+    public LacssMsg.PolygonResult runDetection(LacssMsg.Input inputs) throws InterruptedException {
+        LacssMsg.PolygonResult results;
+        ManagedChannel channel = null;
 
-        if (token != null) {
-            LacssTokenCredentials callCredentials = new LacssTokenCredentials(token);
-            stub = stub.withCallCredentials(callCredentials);
-        }
-
-        return stub.runDetection(inputs);
-    }
-
-    @Override
-    public void finalize() {
         try {
-            channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {}
+            channel = Grpc.newChannelBuilder(host, InsecureChannelCredentials.create())
+                .build();
+            LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
+                .withWaitForReady()
+                .withDeadlineAfter(90, TimeUnit.SECONDS);            
+
+            if (token != null) {
+                LacssTokenCredentials callCredentials = new LacssTokenCredentials(token);
+                stub = stub.withCallCredentials(callCredentials);
+            }
+
+            results = stub.runDetection(inputs);
+        } 
+        finally{
+            if (channel != null) {
+                channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+            }
+        }
+ 
+        return results;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class LacssClient {
         if (modelPath != null) {
             return "Local: " + getModelPath();
         } else {
-            return "Remote: " + blockingStub.getChannel() + ":" + token;
+            return "Remote: " + host + ":" + token;
         }
     }
 }
