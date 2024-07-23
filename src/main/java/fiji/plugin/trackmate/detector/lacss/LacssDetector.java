@@ -80,9 +80,11 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			if (ch_c != -1) {
 				pos[ch_c] = idx % n_ch ;
 			}
-			pos[ch_x] = ( idx / n_ch ) % width;
-			pos[ch_y] = idx / (n_ch * width);
+			pos[ch_x] = ( idx / n_ch ) % width + crop.min(ch_x);
+			pos[ch_y] = idx / (n_ch * width) + crop.min(ch_y);
+
 			data.putFloat(floatImg.getAt(pos).get());
+
 		}
 
 		LacssMsg.Image encoded_img = LacssMsg.Image.newBuilder()
@@ -120,8 +122,8 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			int cnt = 0;
 			for (LacssMsg.Point point : points) {
 			
-				x[cnt] = calibration[0] * ( interval.min(0) + point.getX() + 1.5 );
-				y[cnt] = calibration[1] * ( interval.min(1) + point.getY() + 1.5 );
+				x[cnt] = calibration[ch_x] * ( crop.min(ch_x) + point.getX() );
+				y[cnt] = calibration[ch_y] * ( crop.min(ch_y) + point.getY() );
 
 				cnt += 1;
 			}

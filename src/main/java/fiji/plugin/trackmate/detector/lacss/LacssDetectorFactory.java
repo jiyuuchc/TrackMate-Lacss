@@ -1,5 +1,6 @@
 package fiji.plugin.trackmate.detector.lacss;
 
+import static fiji.plugin.trackmate.io.IOUtils.readBooleanAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.readDoubleAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.readStringAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.writeAttribute;
@@ -240,7 +241,20 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 			n_ch = shape[img.dimensionIndex(Axes.CHANNEL)];
 		}
 
-		return checkSettings( settings );
+		boolean ok = checkSettings( settings );
+
+		// Element element = new Element("settings");
+		// ok = ok && marshall(settings, element);
+
+		// Logger.IJ_LOGGER.log("marshall settings");
+
+		// if (ok) {
+		// 	Preferences prefs = Preferences.userNodeForPackage(LacssDetectorFactory.class);
+		// 	prefs.put("settings", new XMLOutputter().outputString(element));
+		// 	// Logger.IJ_LOGGER.log("Save prefs");
+		// }
+
+		return ok;
 	}
 
 	@Override
@@ -265,7 +279,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 		if ( !ok )
 			errorMessage = errorHolder.toString();
-
+		
 		return ok;
 	}
 
@@ -280,9 +294,12 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_NMS_IOU, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_SEGMENTATION_THRESHOLD, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_DETECTION_THRESHOLD, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_MULTI_CHANNEL, errorHolder );
+		ok = ok && readBooleanAttribute( element, settings, Constants.KEY_MULTI_CHANNEL, errorHolder );
 		ok = ok && readStringAttribute( element, settings, Constants.KEY_LACSS_REMOTE_SERVER, errorHolder);
 		ok = ok && readStringAttribute( element, settings, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, errorHolder);
+
+		if ( !ok )
+			errorMessage = errorHolder.toString();
 
 		return checkSettings( settings );
 	}
@@ -297,17 +314,47 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	public Map< String, Object > getDefaultSettings()
 	{
 		final Map< String, Object > settings = new HashMap<>();
-		settings.put( Constants.KEY_MIN_CELL_AREA, Constants.DEFAULT_MIN_CELL_AREA );
-		settings.put( Constants.KEY_RETURN_LABEL, Constants.DEFAULT_RETURN_LABEL );
-		settings.put( Constants.KEY_SCALING, Constants.DEFAULT_SCALING);
-		settings.put( Constants.KEY_NMS_IOU, Constants.DEFAULT_NMS_IOU);
-		settings.put( Constants.KEY_SEGMENTATION_THRESHOLD, Constants.DEFAULT_SEGMENTATION_THRESHOLD);
-		settings.put( Constants.KEY_DETECTION_THRESHOLD, Constants.DEFAULT_DETECTION_THRESHOLD);
-		settings.put( Constants.KEY_MULTI_CHANNEL, Constants.DEFAULT_MULTI_CHANNEL );
-		settings.put( Constants.KEY_LACSS_REMOTE_SERVER, Constants.DEFAULT_LACSS_REMOTE_SERVER );
-		settings.put( Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, Constants.DEFAULT_LACSS_REMOTE_SERVER_TOKEN );
+		boolean ok = false;
 
-		settings.put( Constants.KEY_LOGGER, Logger.DEFAULT_LOGGER );
+		// Preferences prefs = Preferences.userNodeForPackage(LacssDetectorFactory.class);
+		// String strElement = prefs.get("settings", null);
+		// // Logger.IJ_LOGGER.log(strElement);
+
+		// ok = strElement != null;
+		// if (ok) {
+		// 	try {
+		// 		SAXBuilder builder = new SAXBuilder();
+		// 		Document doc = builder.build(new StringReader(strElement));
+
+		// 		// Logger.IJ_LOGGER.log(new XMLOutputter().outputString(doc.getRootElement()));
+
+		// 		ok = unmarshall(doc.getRootElement(), settings);
+
+		// 	} catch (JDOMException | IOException e) {
+		// 		errorMessage = e.getLocalizedMessage();
+		// 		ok = false;
+		// 	}
+
+		// 	if (! ok ) {
+		// 		Logger.IJ_LOGGER.log(errorMessage);
+		// 	};
+
+		// }
+
+		if (! ok) {
+			settings.put( Constants.KEY_MIN_CELL_AREA, Constants.DEFAULT_MIN_CELL_AREA );
+			settings.put( Constants.KEY_SCALING, Constants.DEFAULT_SCALING);
+			settings.put( Constants.KEY_NMS_IOU, Constants.DEFAULT_NMS_IOU);
+			settings.put( Constants.KEY_SEGMENTATION_THRESHOLD, Constants.DEFAULT_SEGMENTATION_THRESHOLD);
+			settings.put( Constants.KEY_DETECTION_THRESHOLD, Constants.DEFAULT_DETECTION_THRESHOLD);
+			settings.put( Constants.KEY_MULTI_CHANNEL, Constants.DEFAULT_MULTI_CHANNEL );
+			settings.put( Constants.KEY_LACSS_REMOTE_SERVER, Constants.DEFAULT_LACSS_REMOTE_SERVER );
+			settings.put( Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, Constants.DEFAULT_LACSS_REMOTE_SERVER_TOKEN );
+			settings.put( Constants.KEY_LOGGER, Logger.DEFAULT_LOGGER );
+	
+		}
+
+		// Logger.IJ_LOGGER.log(settings.toString());
 
 		return settings;
 	}
@@ -318,7 +365,6 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		boolean ok = true;
 		final StringBuilder errorHolder = new StringBuilder();
 		ok = ok & checkParameter( settings, Constants.KEY_MIN_CELL_AREA, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, Constants.KEY_RETURN_LABEL, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, Constants.KEY_SCALING, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, Constants.KEY_NMS_IOU, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, Constants.KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
@@ -347,10 +393,10 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 			Constants.KEY_MULTI_CHANNEL,
 			Constants.KEY_SEGMENTATION_THRESHOLD,
 			Constants.KEY_DETECTION_THRESHOLD,
-			Constants.KEY_RETURN_LABEL,
 			Constants.KEY_LOGGER );
 
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
+
 		if ( !ok )
 			errorMessage = errorHolder.toString();
 
