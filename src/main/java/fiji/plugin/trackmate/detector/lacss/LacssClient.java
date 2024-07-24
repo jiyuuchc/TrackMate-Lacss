@@ -8,6 +8,7 @@ import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 public class LacssClient {
     private final String host;
@@ -61,7 +62,9 @@ public class LacssClient {
                 .build();
             LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
                 .withWaitForReady()
-                .withDeadlineAfter(180, TimeUnit.SECONDS);            
+                .withCompression("gzip")
+                .withMaxOutboundMessageSize(1024*1024*16)
+                .withDeadlineAfter(180, TimeUnit.SECONDS);
 
             if (token != null) {
                 LacssTokenCredentials callCredentials = new LacssTokenCredentials(token);
@@ -70,7 +73,7 @@ public class LacssClient {
 
             results = stub.runDetection(inputs);
 
-        } catch (Exception e) {
+        } catch (StatusRuntimeException e) {
             status = Status.fromThrowable(e);
             results = null;
         }
