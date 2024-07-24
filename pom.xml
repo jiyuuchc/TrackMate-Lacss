@@ -166,9 +166,9 @@
 	</dependencies>
 
 	<repositories>
-		<repository>
-			<id>scijava.public</id>
-			<url>https://maven.scijava.org/content/groups/public</url>
+		<repository> 
+			<id>scijava.public</id> 
+			<url>https://maven.scijava.org/content/groups/public</url> 
 		</repository>
 	</repositories>
 
@@ -226,9 +226,14 @@
 
 	<distributionManagement> 
 		<repository> 
-			<id>scijava.release</id> 
-			<url>https://maven.scijava.org/content/repositories/releases/</url> 
+			<id>github</id> 
+			<name>GitHub Packages</name> 
+			<url>https://maven.pkg.github.com/jiyuuchc/TrackMate-Lacss</url> 
 		</repository> 
+		<!-- <repository> -->
+			<!-- <id>scijava.release</id> -->
+			<!-- <url>https://maven.scijava.org/content/repositories/releases/</url> -->
+		<!-- </repository> -->
 	</distributionManagement> 
 
 </project>
