@@ -7,12 +7,15 @@ import fiji.plugin.trackmate.detector.lacss.LacssGrpc.LacssBlockingStub;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 
 public class LacssClient {
     private final String host;
     private final String token;
     private final Process localProcess;
     private final String modelPath;
+
+    public Status status;
 
     public String getModelPath() {
         return modelPath;
@@ -26,6 +29,7 @@ public class LacssClient {
         this.host = host;
         this.localProcess = null;
         this.modelPath = null;
+        this.status = Status.OK;
     }
 
     LacssClient(String modelPath) throws IOException {
@@ -49,7 +53,7 @@ public class LacssClient {
     }
 
     public LacssMsg.PolygonResult runDetection(LacssMsg.Input inputs) throws InterruptedException {
-        LacssMsg.PolygonResult results;
+        LacssMsg.PolygonResult results = null;
         ManagedChannel channel = null;
 
         try {
@@ -57,7 +61,7 @@ public class LacssClient {
                 .build();
             LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
                 .withWaitForReady()
-                .withDeadlineAfter(90, TimeUnit.SECONDS);            
+                .withDeadlineAfter(180, TimeUnit.SECONDS);            
 
             if (token != null) {
                 LacssTokenCredentials callCredentials = new LacssTokenCredentials(token);
@@ -65,7 +69,11 @@ public class LacssClient {
             }
 
             results = stub.runDetection(inputs);
-        } 
+
+        } catch (Exception e) {
+            status = Status.fromThrowable(e);
+            results = null;
+        }
         finally{
             if (channel != null) {
                 channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);

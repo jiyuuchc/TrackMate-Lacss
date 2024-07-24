@@ -7,7 +7,6 @@ import static fiji.plugin.trackmate.io.IOUtils.writeAttribute;
 import static fiji.plugin.trackmate.util.TMUtils.checkMapKeys;
 import static fiji.plugin.trackmate.util.TMUtils.checkParameter;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -135,7 +134,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	// }
 
 
-	public LacssClient getClient() throws IOException 
+	public LacssClient getClient()
 	{
 		// if (settings.get(Constants.KEY_LACSS_MODEL) == PretrainedModel.Remote) {
 
@@ -201,24 +200,15 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		else
 			singleTimePoint = ImgPlusViews.hyperSlice( img, img.dimensionIndex( Axes.TIME ), frame );
 
-		try {
-			final LacssDetector< T > detector = new LacssDetector<T>(
-					singleTimePoint,
-					itv,
-					settings,
-					getClient()
-			);
+		final LacssDetector< T > detector = new LacssDetector<T>(
+				singleTimePoint,
+				itv,
+				settings,
+				getClient()
+		);
 
-			return detector;
+		return detector;
 
-		} catch (IOException e) {
-
-			String errMsg = "Unable to start the python backend. " + e.getLocalizedMessage();
-
-			Logger.IJ_LOGGER.error(errMsg);
-
-			return null;
-		}
 	}
 
 	@Override
