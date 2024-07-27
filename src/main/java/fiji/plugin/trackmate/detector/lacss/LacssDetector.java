@@ -149,12 +149,10 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			} else {
 				LacssMsg.Point point = points.get(0);
 
-				// logger.IJ_LOGGER.log("x:" + point.getX() + " y:" + point.getY() + " z:" + point.getZ());
-
 				spots.add(new Spot(
-					(point.getX() + crop.min(ch_x)) * calibration[ch_x], 
-					(point.getY() + crop.min(ch_y)) * calibration[ch_y],
-					(point.getZ() + crop.min(ch_z)) * calibration[ch_z],
+					(point.getX() + crop.min(ch_x)) * calibration[0], 
+					(point.getY() + crop.min(ch_y)) * calibration[1],
+					(point.getZ() + crop.min(ch_z)) * calibration[2],
 					3, score*100));
 			}
 		}
