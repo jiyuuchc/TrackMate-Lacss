@@ -63,7 +63,7 @@ public class LacssClient {
             LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
                 .withWaitForReady()
                 .withCompression("gzip")
-                .withMaxOutboundMessageSize(1024*1024*16)
+                .withMaxOutboundMessageSize(1024*1024*64)
                 .withDeadlineAfter(180, TimeUnit.SECONDS);
 
             if (token != null) {
