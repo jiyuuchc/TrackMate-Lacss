@@ -13,7 +13,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>trackmate-lacss</artifactId>
-	<version>0.5.0</version>
+	<version>0.6.0-SNAPSHOT</version>
 
 	<name>TrackMate-Lacss</name>
 	<description>TrackMate detector based on the Lacss model.</description>
@@ -78,20 +78,20 @@
 	</ciManagement>
 
 	<properties>
+		<enforcer.skip>true</enforcer.skip>
 		<package-name>fiji.plugin.trackmate.lacss</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.projectName>TrackMate-Lacss</license.projectName>
 		<license.copyrightOwners>Developers</license.copyrightOwners>
-		<!-- NB: Deploy releases to the SciJava Maven repository. -->
-		<!--releaseProfiles>sign,deploy-to-scijava</releaseProfiles -->
-
-		<!-- <TrackMate.version>7.10.2</TrackMate.version> -->
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>		
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>TrackMate</artifactId>
+			<version>8.0.0-SNAPSHOT</version>
 		</dependency>
 
 		<!-- ImageJ dependencies -->
@@ -128,6 +128,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
+			<!-- <version>2.11.0.redhat-00001</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
