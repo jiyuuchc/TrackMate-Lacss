@@ -53,8 +53,8 @@ public class LacssClient {
         }
     }
 
-    public LacssMsg.PolygonResult runDetection(LacssMsg.Input inputs) throws InterruptedException {
-        LacssMsg.PolygonResult results = null;
+    public LacssMsg.Results runDetection(LacssMsg.Input inputs) throws InterruptedException {
+        LacssMsg.Results results = null;
         ManagedChannel channel = null;
 
         try {
@@ -63,7 +63,8 @@ public class LacssClient {
             LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
                 .withWaitForReady()
                 .withCompression("gzip")
-                .withMaxOutboundMessageSize(1024*1024*64)
+                .withMaxOutboundMessageSize(1024*1024*512)
+                .withMaxInboundMessageSize(1024*1024*512)
                 .withDeadlineAfter(180, TimeUnit.SECONDS);
 
             if (token != null) {

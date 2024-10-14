@@ -6,7 +6,7 @@ option java_outer_classname = "LacssMsg";
 option java_package = "fiji.plugin.trackmate.detector.lacss";
 
 service Lacss {
-    rpc RunDetection(Input) returns (PolygonResult) {}
+    rpc RunDetection(Input) returns (Results) {}
 }
 
 enum DType {
@@ -20,6 +20,9 @@ message Image {
     DType dtype = 4;
     bytes data = 5;
     uint64 depth = 6;
+    float voxel_dim_x = 7;
+    float voxel_dim_y = 8;
+    float voxel_dim_z = 9;
 }
 
 message Settings {
@@ -30,23 +33,12 @@ message Settings {
     float detection_threshold = 5;
 	float segmentation_threshold = 6;
     bool return_polygon = 7;
+    float cell_size_hint = 8;
 }
 
 message Input {
     Settings settings = 1;
     Image image = 2;
-}
-
-message Label {
-    uint64 height = 1;
-    uint64 width = 2;
-    uint64 depth = 3;
-    bytes data = 6;
-}
-
-message Result {
-    Label score = 1;
-    Label label = 2;
 }
 
 message Point {
@@ -60,6 +52,21 @@ message Polygon {
     repeated Point points = 2;
 }
 
-message PolygonResult {
-    repeated Polygon polygons = 1;
+message Mesh{
+    float score = 1;
+    repeated Point verts = 2;
+    repeated uint64 faces = 3;
+    repeated Point normals = 4;
+    repeated float values = 5;
+}
+
+message Roi {
+    oneof roi {
+        Polygon polygon = 1;
+        Mesh mesh = 2;
+    }
+}
+
+message Results {
+    repeated Roi rois = 1;
 }

@@ -107,31 +107,34 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 				.setSettings(settings)
 				.build();
 
-		LacssMsg.PolygonResult msg;
+		LacssMsg.Results msg;
 		try {
 
 			// Logger.IJ_LOGGER.log("Connecting to server" + client.toString());
 
 			msg = client.runDetection(inputs);
-
+			
 		} catch (InterruptedException e) {
-			logger.error(BASE_ERROR_MESSAGE + e.getLocalizedMessage());
+			errorMessage = baseErrorMessage + e.getLocalizedMessage();
 			return false;
+			// logger.error(BASE_ERROR_MESSAGE + e.getLocalizedMessage());
 		} 
 
 		if (msg == null) {
-			logger.error(BASE_ERROR_MESSAGE + "server returned error code: " + client.status.getCode() + "\n");
-			logger.error(BASE_ERROR_MESSAGE + client.status.getDescription());
+			errorMessage = baseErrorMessage + client.status.getCode();
+			Logger.IJ_LOGGER.error("server returned error code: " + client.status.getCode() + "\n");
+			Logger.IJ_LOGGER.error(client.status.getDescription());
 			return false;
 		}
 
-		spots = new ArrayList<>( msg.getPolygonsCount() );
-		for ( LacssMsg.Polygon polygon : msg.getPolygonsList()) {
-
-			float score = polygon.getScore();
-			List<LacssMsg.Point> points = polygon.getPointsList();
-
+		int n_spots = msg.getRoisCount();
+		spots = new ArrayList<>( n_spots );
+		for ( LacssMsg.Roi roi : msg.getRoisList()) {
 			if (depth == 1) {
+				LacssMsg.Polygon polygon = roi.getPolygon();
+				float score = polygon.getScore();
+				List<LacssMsg.Point> points = polygon.getPointsList();
+	
 				double [] x = new double[points.size()];
 				double [] y = new double[points.size()];
 
@@ -147,13 +150,34 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 				spots.add(SpotRoi.createSpot(x, y, score * 100));
 
 			} else {
-				LacssMsg.Point point = points.get(0);
+				
+				LacssMsg.Mesh mesh = roi.getMesh();
+				float score = mesh.getScore();
+				float zc = 0, yc = 0, xc = 0, zc2 = 0, yc2 = 0, xc2 = 0;
+
+				for ( LacssMsg.Point vert : mesh.getVertsList()) {
+					zc += vert.getZ();
+					yc += vert.getY();
+					xc += vert.getX();
+					zc2 += vert.getZ() * vert.getZ()  ;
+					yc2 += vert.getY() * vert.getY();
+					xc2 += vert.getX() * vert.getX();
+				}
+
+				zc = zc / mesh.getVertsCount();
+				yc = yc / mesh.getVertsCount();
+				xc = xc / mesh.getVertsCount();
+				zc2 = zc2 / mesh.getVertsCount() - zc * zc; 
+				yc2 = yc2 / mesh.getVertsCount() - yc * yc;
+				xc2 = xc2 / mesh.getVertsCount() - xc * xc;
+
+				double radius = Math.sqrt((zc2 + yc2 + xc2)) / 3;
 
 				spots.add(new Spot(
-					(point.getX() + crop.min(ch_x)) * calibration[0], 
-					(point.getY() + crop.min(ch_y)) * calibration[1],
-					(point.getZ() + crop.min(ch_z)) * calibration[2],
-					3, score*100));
+					(xc + crop.min(ch_x)) * calibration[0], 
+					(yc + crop.min(ch_y)) * calibration[1],
+					(zc + crop.min(ch_z)) * calibration[2],
+					 radius, score*100));
 			}
 		}
 
