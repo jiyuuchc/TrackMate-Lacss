@@ -9,6 +9,7 @@ import com.google.protobuf.ByteString;
 
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Spot;
+import fiji.plugin.trackmate.SpotMesh;
 import fiji.plugin.trackmate.SpotRoi;
 import fiji.plugin.trackmate.detection.SpotDetector;
 import fiji.plugin.trackmate.util.TMUtils;
@@ -17,6 +18,8 @@ import net.imagej.axis.Axes;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.RealTypeConverters;
+import net.imglib2.mesh.Mesh;
+import net.imglib2.mesh.impl.naive.NaiveDoubleMesh;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -39,7 +42,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 	protected long processingTime;
 
-	protected List<Spot> spots;
+	protected List< Spot > spots;
 
     private final LacssClient client;
 
@@ -128,6 +131,9 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 		}
 
 		int n_spots = msg.getRoisCount();
+
+		Logger.IJ_LOGGER.log("detected " + n_spots + " cells.");
+
 		spots = new ArrayList<>( n_spots );
 		for ( LacssMsg.Roi roi : msg.getRoisList()) {
 			if (depth == 1) {
@@ -153,31 +159,22 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 				
 				LacssMsg.Mesh mesh = roi.getMesh();
 				float score = mesh.getScore();
-				float zc = 0, yc = 0, xc = 0, zc2 = 0, yc2 = 0, xc2 = 0;
+
+				final Mesh output = new NaiveDoubleMesh();
 
 				for ( LacssMsg.Point vert : mesh.getVertsList()) {
-					zc += vert.getZ();
-					yc += vert.getY();
-					xc += vert.getX();
-					zc2 += vert.getZ() * vert.getZ()  ;
-					yc2 += vert.getY() * vert.getY();
-					xc2 += vert.getX() * vert.getX();
+					output.vertices().add(
+						(vert.getX() + crop.min(ch_x)) * calibration[ch_x], 
+						(vert.getY() + crop.min(ch_y)) * calibration[ch_y], 
+						(vert.getZ() + crop.min(ch_z)) * calibration[ch_z]);
+				}
+				
+				List<Long> faces =  mesh.getFacesList();
+				for (int i = 0; i < faces.size(); i += 3) {
+					output.triangles().add(faces.get(i), faces.get(i+1), faces.get(i+2));
 				}
 
-				zc = zc / mesh.getVertsCount();
-				yc = yc / mesh.getVertsCount();
-				xc = xc / mesh.getVertsCount();
-				zc2 = zc2 / mesh.getVertsCount() - zc * zc; 
-				yc2 = yc2 / mesh.getVertsCount() - yc * yc;
-				xc2 = xc2 / mesh.getVertsCount() - xc * xc;
-
-				double radius = Math.sqrt((zc2 + yc2 + xc2)) / 3;
-
-				spots.add(new Spot(
-					(xc + crop.min(ch_x)) * calibration[0], 
-					(yc + crop.min(ch_y)) * calibration[1],
-					(zc + crop.min(ch_z)) * calibration[2],
-					 radius, score*100));
+				spots.add(new SpotMesh(output, score));
 			}
 		}
 
@@ -225,10 +222,6 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			errorMessage = baseErrorMessage + "Image is null.";
 			return false;
 		}
-		// if (img.dimensionIndex(Axes.Z) >= 0) {
-		// 	errorMessage = baseErrorMessage + "Image must be 2D over time, got an image with multiple Z.";
-		// 	return false;
-		// }
 		return true;
 	}
 
