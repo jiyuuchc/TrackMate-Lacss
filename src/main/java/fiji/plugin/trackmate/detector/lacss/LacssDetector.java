@@ -18,6 +18,7 @@ import biopb.image.ROI;
 import biopb.image.ScoredROI;
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Spot;
+import fiji.plugin.trackmate.SpotMesh;
 import fiji.plugin.trackmate.SpotRoi;
 import fiji.plugin.trackmate.detection.SpotDetector;
 import fiji.plugin.trackmate.util.TMUtils;
@@ -28,6 +29,8 @@ import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.RealTypeConverters;
+import net.imglib2.mesh.Mesh;
+import net.imglib2.mesh.impl.naive.NaiveDoubleMesh;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -51,7 +54,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 	protected long processingTime;
 
-	protected List<Spot> spots;
+	protected List< Spot > spots;
 
 	private final LacssClient client;
 
@@ -161,6 +164,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 	}
 
+	
 	boolean processResponse(DetectionResponse response) {
 		final double[] calibration = TMUtils.getSpatialCalibration(img);
 
@@ -206,33 +210,27 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 					return false;
 				}
 
-				float zc = 0, yc = 0, xc = 0, zc2 = 0, yc2 = 0, xc2 = 0;
-				int nVerts = roi.getMesh().getVertsCount();
+				final Mesh output = new NaiveDoubleMesh();
 
-				for (Point vert : roi.getMesh().getVertsList()) {
-					zc += vert.getZ();
-					yc += vert.getY();
-					xc += vert.getX();
-					zc2 += vert.getZ() * vert.getZ();
-					yc2 += vert.getY() * vert.getY();
-					xc2 += vert.getX() * vert.getX();
+				for ( Point vert : roi.getMesh().getVertsList() ) {
+					output.vertices().add(
+						(vert.getX() + interval.min(0)) * calibration[0], 
+						(vert.getY() + interval.min(1)) * calibration[1], 
+						(vert.getZ() + interval.min(2)) * calibration[2]);					
+
 				}
 
-				zc = zc / nVerts;
-				yc = yc / nVerts;
-				xc = xc / nVerts;
-				zc2 = zc2 / nVerts - zc * zc;
-				yc2 = yc2 / nVerts - yc * yc;
-				xc2 = xc2 / nVerts - xc * xc;
+				for ( Face face : roi.getMesh().getFacesList() ) {
 
-				double radius = Math.sqrt((zc2 + yc2 + xc2)) / 3;
+					output.triangles().add(
+						face.getP1(),
+						face.getP2(),
+						face.getP3()
+					);
+				}
 
-				spots.add(new Spot(
-						(xc + interval.min(0)) * calibration[0],
-						(yc + interval.min(1)) * calibration[1],
-						(zc + interval.min(2)) * calibration[2],
-						radius,
-						score * 100));
+				spots.add(new SpotMesh(output, score * 100 ));
+
 			}
 		}
 
@@ -295,11 +293,6 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			errorMessage = baseErrorMessage + "Image is null.";
 			return false;
 		}
-		// if (img.dimensionIndex(Axes.Z) >= 0) {
-		// errorMessage = baseErrorMessage + "Image must be 2D over time, got an image
-		// with multiple Z.";
-		// return false;
-		// }
 		return true;
 	}
 

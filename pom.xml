@@ -49,12 +49,6 @@
 			</roles>
 		</developer>
 	</developers>
-	<contributors>
-		<contributor>
-			<name>Nicholas Kuang</name>
-		</contributor>
-	</contributors>
-
 	<mailingLists>
 		<mailingList>
 			<name>Image.sc Forum</name>
