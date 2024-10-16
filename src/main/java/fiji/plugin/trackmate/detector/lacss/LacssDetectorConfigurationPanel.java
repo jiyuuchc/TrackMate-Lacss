@@ -31,6 +31,7 @@ import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.util.DetectionPreview;
+import fiji.plugin.trackmate.util.DetectionPreviewPanel;
 
 public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 {
@@ -51,8 +52,6 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 
 	protected static final String DOC1_URL = "https://jiyuuchc.github.io/lacss/api/deploy/#lacss.deploy.Predictor";
 
-	// private final JComboBox< PretrainedModel > cmbboxPretrainedModel;
-
 	private final JFormattedTextField ftfmin_cell_area;
 
 	private final JFormattedTextField ftfmin_scaling;
@@ -65,13 +64,9 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 
 	private final JCheckBox chckbx_multi_channel;
 
-	// private final JTextField tfCustomPath;
-
 	private final JTextField tfRemoteServer;
 
 	private final JTextField tfRemoteServerToken;
-
-	// private final JButton btnBrowseCustomModel;
 
 	public LacssDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
@@ -138,55 +133,6 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblUrl.gridy = row++;
 		add( lblUrl, gbcLblUrl );
 
-		// Model source
-		// final JLabel lblPretrainedModel = new JLabel( "Pretrained model:" );
-		// final GridBagConstraints gbcLblPretrainedModel = new GridBagConstraints();
-		// lblPretrainedModel.setFont( SMALL_FONT );
-		// gbcLblPretrainedModel.anchor = GridBagConstraints.CENTER;
-		// gbcLblPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
-		// gbcLblPretrainedModel.gridx = 0;
-		// gbcLblPretrainedModel.gridy = row;
-		// add( lblPretrainedModel, gbcLblPretrainedModel );
-
-		// cmbboxPretrainedModel = new JComboBox<>( new Vector<>( Arrays.asList( PretrainedModel.values() ) ) );
-		// cmbboxPretrainedModel.setFont( SMALL_FONT );
-		// final GridBagConstraints gbcCmbboxPretrainedModel = new GridBagConstraints();
-		// gbcCmbboxPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
-		// gbcCmbboxPretrainedModel.fill = GridBagConstraints.HORIZONTAL;
-		// gbcCmbboxPretrainedModel.gridx = 1;
-		// gbcCmbboxPretrainedModel.gridy = row++;
-		// add( cmbboxPretrainedModel, gbcCmbboxPretrainedModel );
-
-		// custom model path
-		// final JLabel lblPathToCustomModel = new JLabel( "Path:" );
-		// final GridBagConstraints gbcLblPathToCustomModel = new GridBagConstraints();
-		// lblPathToCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
-		// gbcLblPathToCustomModel.anchor = GridBagConstraints.CENTER;
-		// gbcLblPathToCustomModel.insets = new Insets( 0, 5, 5, 5 );
-		// gbcLblPathToCustomModel.gridx = 0;
-		// gbcLblPathToCustomModel.gridy = row;
-		// add( lblPathToCustomModel, gbcLblPathToCustomModel );
-
-		// tfCustomPath = new JTextField( " " );
-		// tfCustomPath.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
-		// tfCustomPath.setColumns( 15 );
-		// final GridBagConstraints gbcTfCustomPath = new GridBagConstraints();
-		// gbcTfCustomPath.insets = new Insets( 0, 5, 5, 5 );
-		// gbcTfCustomPath.fill = GridBagConstraints.BOTH;
-		// gbcTfCustomPath.gridx = 1;
-		// gbcTfCustomPath.gridy = row;
-		// add( tfCustomPath, gbcTfCustomPath );
-
-		// btnBrowseCustomModel = new JButton( "Browse" );
-		// btnBrowseCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
-		// final GridBagConstraints gbcBtnBrowseCustomModel = new GridBagConstraints();
-		// gbcBtnBrowseCustomModel.insets = new Insets( 0, 0, 5, 5 );
-		// gbcBtnBrowseCustomModel.anchor = GridBagConstraints.SOUTHEAST;
-		// gbcBtnBrowseCustomModel.gridx = 2;
-		// gbcBtnBrowseCustomModel.gridy = row++;
-		// btnBrowseCustomModel.addActionListener( l -> browseCustomModelPath() );
-		// add( btnBrowseCustomModel, gbcBtnBrowseCustomModel );
-
 		// server
 		final JLabel lblRemoteServer = new JLabel( "Server:" );
 		lblRemoteServer.setFont( SMALL_FONT );
@@ -225,20 +171,6 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		gbcTfRemoteServerToken.gridx = 1;
 		gbcTfRemoteServerToken.gridy = row++;
 		add( tfRemoteServerToken, gbcTfRemoteServerToken );
-
-		// final ItemListener srcComboBoxListener = e -> {
-		// 	final boolean isCustom = cmbboxPretrainedModel.getSelectedItem() == PretrainedModel.CUSTOM;
-		// 	final boolean isRemote = cmbboxPretrainedModel.getSelectedItem() == PretrainedModel.Remote;
-		// 	tfCustomPath.setVisible( isCustom );
-		// 	lblPathToCustomModel.setVisible( isCustom );
-		// 	btnBrowseCustomModel.setVisible( isCustom );
-		// 	lblRemoteServer.setVisible( isRemote );
-		// 	tfRemoteServer.setVisible( isRemote );
-		// 	lblRemoteServerToken.setVisible( isRemote );
-		// 	tfRemoteServerToken.setVisible( isRemote );
-		// };
-		// cmbboxPretrainedModel.addItemListener( srcComboBoxListener );
-		// srcComboBoxListener.itemStateChanged( null );
 
 		// min cell area
 		final JLabel lblMin_cell_area = new JLabel( "Minimum Cell Area:" );
@@ -344,44 +276,31 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 		final GridBagConstraints gbcBtnPreview = new GridBagConstraints();
 		gbcBtnPreview.gridwidth = 3;
 		gbcBtnPreview.fill = GridBagConstraints.BOTH;
-		gbcBtnPreview.insets = new Insets( 0, 5, 5, 5 );
+		gbcBtnPreview.insets = new Insets( 0, 0, 10, 0 );
 		gbcBtnPreview.gridx = 0;
-		gbcBtnPreview.gridy = 16;
+		gbcBtnPreview.gridy = row+2;
 
 		final DetectionPreview detectionPreview = DetectionPreview.create()
 				.model( model )
 				.settings( settings )
 				.detectorFactory( new LacssDetectorFactory<>() )
 				.detectionSettingsSupplier( () -> getSettings() )
-				.axisLabel( "Area histogram" )
+				.axisLabel( "Score histogram" )
 				.get();
+
+		Logger.IJ_LOGGER.log(detectionPreview.toString());
+		DetectionPreviewPanel panel = detectionPreview.getPanel();
+		Logger.IJ_LOGGER.log(panel.toString());
+
 		add( detectionPreview.getPanel(), gbcBtnPreview );
 
 	}
 
-	// protected void browseCustomModelPath()
-	// {
-	// 	btnBrowseCustomModel.setEnabled( false );
-	// 	try
-	// 	{
-	// 		final File file = FileChooser.chooseFile( this, tfCustomPath.getText(), null,
-	// 				"Browse to a Lacss custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
-	// 		if ( file != null )
-	// 			tfCustomPath.setText( file.getAbsolutePath() );
-	// 	}
-	// 	finally
-	// 	{
-	// 		btnBrowseCustomModel.setEnabled( true );
-	// 	}
-	// }
-
 	@Override
 	public void setSettings( final Map< String, Object > settings )
 	{
-		// tfCustomPath.setText( ( String ) settings.get( Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH ) );
 		tfRemoteServer.setText( ( String ) settings.get( Constants.KEY_LACSS_REMOTE_SERVER ) );
 		tfRemoteServerToken.setText( ( String ) settings.get( Constants.KEY_LACSS_REMOTE_SERVER_TOKEN ) );
-		// cmbboxPretrainedModel.setSelectedItem( settings.get( Constants.KEY_LACSS_MODEL ) );
 		ftfmin_cell_area.setValue( settings.get( Constants.KEY_MIN_CELL_AREA ) );
 		chckbx_multi_channel.setSelected( (boolean) settings.get( Constants.KEY_MULTI_CHANNEL ));
 		ftfmin_scaling.setValue( settings.get( Constants.KEY_SCALING));
@@ -394,8 +313,6 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 	{
 		final Map< String, Object > settings = (new LacssDetectorFactory<>()).getDefaultSettings();
 
-		// settings.put( Constants.KEY_LACSS_MODEL, cmbboxPretrainedModel.getSelectedItem() );
-		// settings.put( Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
 		settings.put( Constants.KEY_LACSS_REMOTE_SERVER, tfRemoteServer.getText() );
 		settings.put( Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, tfRemoteServerToken.getText() );
 		final double min_cell_area = ( ( Number ) ftfmin_cell_area.getValue() ).doubleValue();
@@ -416,32 +333,4 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 	@Override
 	public void clean()
 	{} 
-
-// 	public enum PretrainedModel
-// 	{
-// 		Default("Default", ""),
-// 		CUSTOM( "Custom", "" ),
-// 		Remote("Remote", "");
-
-// 		private final String name;
-
-// 		private final String path;
-
-// 		PretrainedModel( final String name, final String path )
-// 		{
-// 			this.name = name;
-// 			this.path = path;
-// 		}
-
-// 		@Override
-// 		public String toString()
-// 		{
-// 			return name;
-// 		}
-
-// 		public String lacssName()
-// 		{
-// 			return path;
-// 		}
-// 	}
 }
