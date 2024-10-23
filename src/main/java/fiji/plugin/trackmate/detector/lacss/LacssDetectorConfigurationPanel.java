@@ -353,7 +353,7 @@ public class LacssDetectorConfigurationPanel extends ConfigurationPanel
 				.settings( settings )
 				.detectorFactory( new LacssDetectorFactory<>() )
 				.detectionSettingsSupplier( () -> getSettings() )
-				.axisLabel( "Area histogram" )
+				.axisLabel( "score histogram" )
 				.get();
 		add( detectionPreview.getPanel(), gbcBtnPreview );
 

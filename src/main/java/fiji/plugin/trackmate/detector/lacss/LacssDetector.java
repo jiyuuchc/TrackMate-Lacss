@@ -16,10 +16,12 @@ import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converter;
 import net.imglib2.converter.RealTypeConverters;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
 public class LacssDetector<T extends RealType<T> & NativeType<T>> implements SpotDetector<T> {
@@ -79,8 +81,12 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 		final double[] calibration = TMUtils.getSpatialCalibration(img);
 
 		ByteBuffer data = ByteBuffer.allocate((int) (depth * width * height * n_ch * Float.BYTES));
-		RandomAccessibleInterval<FloatType> floatImg = RealTypeConverters.convert(crop, new FloatType());
+
+		RealType< T > in = Util.getTypeFromInterval( crop );
+		Converter<RealType<T>, FloatType> converter = RealTypeConverters.getConverter( in, new FloatType());
+
 		long [] pos = new long[dims.length];
+
 		for (long idx = 0; idx < (int)(depth * width * height * n_ch) ; idx+=1) { // enfore z-y-x-c format
 			if (ch_c != -1) {
 				pos[ch_c] = idx % n_ch ;
@@ -91,7 +97,10 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 				pos[ch_z] = idx / (n_ch * width * height);
 			}
 
-			data.putFloat(floatImg.getAt(pos).get());
+			FloatType value = new FloatType();
+			converter.convert(crop.getAt(pos), value);
+
+			data.putFloat(value.get());
 		}
 
 		LacssMsg.Image encoded_img = LacssMsg.Image.newBuilder()
