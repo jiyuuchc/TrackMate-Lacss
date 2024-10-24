@@ -2,9 +2,14 @@ package fiji.plugin.trackmate.detector.lacss;
 
 import java.awt.Image;
 import java.net.URL;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 
+import fiji.plugin.trackmate.Spot;
+import fiji.plugin.trackmate.action.IJRoiExporter;
+import ij.ImagePlus;
+import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Settings;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -58,7 +63,7 @@ public class LacssUtils
 		return new ImageIcon( icon.getImage().getScaledInstance( nw, nh, Image.SCALE_DEFAULT ) );
 	}
 
-	public static final Interval getIntervalWithTime( final ImgPlus< ? > img, final Settings settings )
+	public static final Interval getCurrentFrameInterval( final ImgPlus< ? > img, final Settings settings )
 	{
 		final long[] max = new long[ img.numDimensions() ];
 		final long[] min = new long[ img.numDimensions() ];
@@ -81,41 +86,39 @@ public class LacssUtils
 			max[ zindex ] = settings.zend;
 		}
 
-		// management to elsewhere.
+		// Time select current frame
 		final int tindex = img.dimensionIndex( Axes.TIME );
 		if ( tindex >= 0 )
 		{
-			min[ tindex ] = settings.tstart;
-			max[ tindex ] = settings.tend;
+			int frame = settings.imp.getFrame();
+			min[ tindex ] = frame;
+			max[ tindex ] = frame;
 		}
 
-		// CHANNEL, we might have it, we drop it.
-		final long[] max2;
-		final long[] min2;
+		// CHANNEL 
 		final int cindex = img.dimensionIndex( Axes.CHANNEL );
 		if ( cindex >= 0 )
 		{
-			max2 = new long[ img.numDimensions() - 1 ];
-			min2 = new long[ img.numDimensions() - 1 ];
-			int d2 = 0;
-			for ( int d = 0; d < min.length; d++ )
-			{
-				if ( d != cindex )
-				{
-					min2[ d2 ] = min[ d ];
-					max2[ d2 ] = max[ d ];
-					d2++;
-				}
+			long n_ch = img.dimension(cindex);
+			if ( n_ch <= 3 ) {
+				min[ cindex ] = 0;
+				max[ cindex ] = n_ch - 1;
+			}
+			else {
+				min[ cindex ] = settings.imp.getChannel();
+				max[ cindex ] = settings.imp.getChannel();
 			}
 		}
-		else
-		{
-			max2 = max;
-			min2 = min;
-		}
 
-		final FinalInterval interval = new FinalInterval( min2, max2 );
+		final FinalInterval interval = new FinalInterval( min, max );
 		return interval;
 	}
   
+	public static final void spotsToRois( ImagePlus imp, List<Spot> spots ) {
+		IJRoiExporter exporter = new IJRoiExporter(imp, Logger.IJ_LOGGER);
+		exporter.export(spots);
+	}
+
 }
+
+

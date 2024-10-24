@@ -22,7 +22,7 @@ public class LacssClient {
         return modelPath;
     }
 
-    LacssClient(String host, String token) {
+    public LacssClient(String host, String token) {
         if (token != null && token.trim().length() == 0) {
             token = null;
         }
@@ -33,7 +33,7 @@ public class LacssClient {
         this.status = Status.OK;
     }
 
-    LacssClient(String modelPath) throws IOException {
+    public LacssClient(String modelPath) throws IOException {
         ProcessBuilder pb = new ProcessBuilder("python", "-m", "lacss.deploy.remote_server", "--local", modelPath);
         pb.inheritIO().redirectErrorStream();
         this.localProcess = pb.start();
