@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import fiji.plugin.trackmate.detector.lacss.LacssGrpc.LacssBlockingStub;
+import io.grpc.ChannelCredentials;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.TlsChannelCredentials;
 
 public class LacssClient {
+    private final int MAX_MESSAGE_SIZE = 1024*1024*512 ;
     private final String host;
     private final String token;
     private final Process localProcess;
@@ -53,18 +56,45 @@ public class LacssClient {
         }
     }
 
+    private int guess_port() {
+        int port = 443 ;
+
+        if (host.indexOf(':') > -1) {
+            String[] arr = host.split(":");
+
+            port = Integer.parseInt(arr[1]);
+
+        }
+
+        return port ;
+    }
+
+    ManagedChannel getChannel() {
+        ChannelCredentials cred ;
+
+        if ( guess_port() == 443 ) {
+            cred = TlsChannelCredentials.create() ;
+        } else {
+            cred = InsecureChannelCredentials.create() ;
+        }
+
+        ManagedChannel channel = Grpc.newChannelBuilder(host, cred)
+            .build();
+
+        return channel;
+    }
+
     public LacssMsg.Results runDetection(LacssMsg.Input inputs) throws InterruptedException {
         LacssMsg.Results results = null;
         ManagedChannel channel = null;
 
         try {
-            channel = Grpc.newChannelBuilder(host, InsecureChannelCredentials.create())
-                .build();
+            channel = getChannel() ; 
             LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
                 .withWaitForReady()
                 .withCompression("gzip")
-                .withMaxOutboundMessageSize(1024*1024*512)
-                .withMaxInboundMessageSize(1024*1024*512)
+                .withMaxOutboundMessageSize(MAX_MESSAGE_SIZE)
+                .withMaxInboundMessageSize(MAX_MESSAGE_SIZE)
                 .withDeadlineAfter(180, TimeUnit.SECONDS);
 
             if (token != null) {
