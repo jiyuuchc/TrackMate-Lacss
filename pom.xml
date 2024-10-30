@@ -13,7 +13,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>trackmate-lacss</artifactId>
-	<version>0.4.1</version>
+	<version>0.4.2-SNAPSHOT</version>
 
 	<name>TrackMate-Lacss</name>
 	<description>TrackMate detector based on the Lacss model.</description>
@@ -82,7 +82,6 @@
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.projectName>TrackMate-Lacss</license.projectName>
 		<license.copyrightOwners>Developers</license.copyrightOwners>
-
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<!--releaseProfiles>sign,deploy-to-scijava</releaseProfiles -->
 
