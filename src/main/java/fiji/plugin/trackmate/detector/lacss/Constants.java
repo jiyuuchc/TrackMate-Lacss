@@ -7,7 +7,7 @@ public class Constants {
 	public static final String LACSS_DETECTOR_KEY = "LACSS_DETECTOR";
 
 	public static final String KEY_LACSS_REMOTE_SERVER = "LACSS_REMOTE_SERVER";
-	public static final String DEFAULT_LACSS_REMOTE_SERVER = "localhost:50051";
+	public static final String DEFAULT_LACSS_REMOTE_SERVER = "lacss.cam.uchc.edu";
 
 	public static final String KEY_LACSS_REMOTE_SERVER_TOKEN = "LACSS_REMOTE_SERVER_TOKEN";
 	public static final String DEFAULT_LACSS_REMOTE_SERVER_TOKEN = "";
