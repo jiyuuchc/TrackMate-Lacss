@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package biopb.ome;
+
+option java_package = "biopb.ome";
+option java_outer_classname = "Dataset";
+option java_multiple_files = true;
+
+// An element specifying a collection of images that are always processed
+// together. Images can belong to more than one Dataset, and a Dataset may
+// contain more than one Image. Images contain one or more DatasetRef elements
+// to specify what datasets they belong to. Once a Dataset has been processed in
+// any way, its collection of images cannot be altered. The ExperimenterRef and
+// ExperimenterGroupRef elements specify the person and group this Dataset
+// belongs to. Projects may contain one or more Datasets, and Datasets may
+// belong to one or more Projects. This relationship is specified by listing
+// DatasetRef elements within the Project element.
+//
+message Dataset {
+
+    // required
+    DatasetID id = 1;
+
+    // A description for the dataset. [plain-text multi-line string]
+    optional string description = 2;
+
+    // A name for the dataset that is suitable for presentation to the user.
+    optional string name = 3;
+
+    // images in this dataset
+    repeated ImageRef image_refs = 4;
+
+    repeated AnnotationRef annotation_refs = 5;
+
+    optional ExperimenterRef experimenter_ref = 6;
+
+    optional ExperimenterGroupRef experimenter_group_ref = 7;
+
+}
