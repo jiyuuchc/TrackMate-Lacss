@@ -3,7 +3,6 @@ syntax = "proto3";
 package biopb.ome;
 
 option java_package = "biopb.ome";
-option java_outer_classname = "Project";
 option java_multiple_files = true;
 
 // The Project ID is required. Datasets can be grouped into projects using a
@@ -14,8 +13,20 @@ option java_multiple_files = true;
 //
 message Project {
 
-    // A description for the project. [plain-text multi-line string]
-    optional string descrption = 1;
+    // Name of the project
+    string name = 2;
 
-    
+    // A description for the project. [plain-text multi-line string]
+    string descrption = 3;
+
+
+    // References to other metadata fields
+    string experimenter_id = 4;
+
+    string experimenter_group_id = 5;
+
+    repeated string dataset_ids = 6;
+
+    repeated string annotation_ids = 7;
+
 }

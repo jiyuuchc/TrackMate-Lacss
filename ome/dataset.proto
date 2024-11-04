@@ -3,7 +3,6 @@ syntax = "proto3";
 package biopb.ome;
 
 option java_package = "biopb.ome";
-option java_outer_classname = "Dataset";
 option java_multiple_files = true;
 
 // An element specifying a collection of images that are always processed
@@ -18,22 +17,19 @@ option java_multiple_files = true;
 //
 message Dataset {
 
-    // required
-    DatasetID id = 1;
+    // A name for the dataset that is suitable for presentation to the user.
+    string name = 2;
 
     // A description for the dataset. [plain-text multi-line string]
-    optional string description = 2;
+    string description = 3;
 
-    // A name for the dataset that is suitable for presentation to the user.
-    optional string name = 3;
+    // references to other metadata
+    repeated string image_ids = 4;
 
-    // images in this dataset
-    repeated ImageRef image_refs = 4;
+    repeated string annotation_ids = 5;
 
-    repeated AnnotationRef annotation_refs = 5;
+    string experimenter_id = 6;
 
-    optional ExperimenterRef experimenter_ref = 6;
-
-    optional ExperimenterGroupRef experimenter_group_ref = 7;
+    string experimenter_group_id = 7;
 
 }
