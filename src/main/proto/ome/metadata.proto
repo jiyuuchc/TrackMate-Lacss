@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package biopb.ome;
+
+option java_package = "biopb.ome";
+option java_multiple_files = true;
+
+import "ome/project.proto";
+import "ome/dataset.proto";
+import "ome/folder.proto";
+import "ome/experiment.proto";
+import "ome/plate.proto";
+import "ome/screen.proto";
+import "ome/experimenter.proto";
+import "ome/experimenter_group.proto";
+import "ome/instrument.proto";
+import "ome/image.proto";
+import "ome/annotation.proto";
+import "ome/roi.proto";
+
+// Metadata is the main part of the OME specification
+//
+// In OME-XML, each element of the metadata is associated with an unique ID,
+// which OME-XML uses for cross-reference. In protobuf, we explicitly express
+// this idea by storing the metadata as ID-Data maps. This also adopted a
+// simpler syntax -- we no longer define all the "reference" data types.
+//
+// The string keys used are equivalent to the IDs of the OME-XML design,
+// although here we do not enforce its format. 
+//
+message Metadata {
+
+    map<string, Project> projects = 1;
+
+    map<string, Dataset> datasets = 2;
+
+    map<string, Folder> folders = 3;
+
+    map<string, Experiment> experiments = 4;
+
+    map<string, Plate> plates = 5;
+
+    map<string, Screen> screens = 6;
+
+    map<string, Experimenter> experimenter = 7;
+
+    map<string, ExperimenterGroup> experimenter_groups = 8;
+
+    map<string, Instrument> instruments = 9;
+
+    map<string, Image> images = 10;
+
+    map<string, ROI> rois = 11;
+
+    map<string, Annotation> annotations = 12;
+
+}

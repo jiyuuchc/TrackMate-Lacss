@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package biopb.lacss;
+
+option java_package = "biopb.lacss";
+option java_multiple_files = true;
+
+
+import "lacss/detection_request.proto";
+import "lacss/detection_response.proto";
+
+service Lacss {
+
+    // Unitary call for computing cell detection / segmentation
+    rpc RunDetection(DetectionRequest) returns (DetectionResponse) ;
+
+    // The streaming version allows dynamic updating of the DetectionRequest and
+    // getting updated results. For example, a client may request analyses at
+    // several different settings on the same image. After initial request, the
+    // following streaming requests no long need to transmit the image pixel
+    // data anymore, but only the new parameter settings, which saves network
+    // bandwidth.
+    rpc RunDetectionStream(stream DetectionRequest) returns (stream DetectionResponse) ;
+
+}
+
