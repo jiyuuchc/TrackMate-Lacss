@@ -3,7 +3,9 @@ package fiji.plugin.trackmate.detector.lacss;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import fiji.plugin.trackmate.detector.lacss.LacssGrpc.LacssBlockingStub;
+import biopb.lacss.LacssGrpc;
+import biopb.lacss.DetectionRequest;
+import biopb.lacss.DetectionResponse;
 import io.grpc.ChannelCredentials;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
@@ -13,7 +15,8 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.TlsChannelCredentials;
 
 public class LacssClient {
-    private final int MAX_MESSAGE_SIZE = 1024*1024*512 ;
+
+    private final int MAX_MESSAGE_SIZE = 1024 * 1024 * 512;
     private final String host;
     private final String token;
     private final Process localProcess;
@@ -52,12 +55,13 @@ public class LacssClient {
             localProcess.destroy();
             try {
                 localProcess.waitFor();
-            } catch(InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         }
     }
 
     private int guess_port() {
-        int port = 443 ;
+        int port = 443;
 
         if (host.indexOf(':') > -1) {
             String[] arr = host.split(":");
@@ -66,55 +70,61 @@ public class LacssClient {
 
         }
 
-        return port ;
+        return port;
     }
 
     ManagedChannel getChannel() {
-        ChannelCredentials cred ;
+        ChannelCredentials cred;
 
-        if ( guess_port() == 443 ) {
-            cred = TlsChannelCredentials.create() ;
+        if (guess_port() == 443) {
+            cred = TlsChannelCredentials.create();
         } else {
-            cred = InsecureChannelCredentials.create() ;
+            cred = InsecureChannelCredentials.create();
         }
 
         ManagedChannel channel = Grpc.newChannelBuilder(host, cred)
-            .build();
+                .build();
 
         return channel;
     }
 
-    public LacssMsg.Results runDetection(LacssMsg.Input inputs) throws InterruptedException {
-        LacssMsg.Results results = null;
+    public DetectionResponse runDetection(DetectionRequest request) throws InterruptedException {
+        DetectionResponse response = null;
         ManagedChannel channel = null;
 
         try {
-            channel = getChannel() ; 
-            LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
-                .withWaitForReady()
-                .withCompression("gzip")
-                .withMaxOutboundMessageSize(MAX_MESSAGE_SIZE)
-                .withMaxInboundMessageSize(MAX_MESSAGE_SIZE)
-                .withDeadlineAfter(180, TimeUnit.SECONDS);
+            channel = getChannel();
+            LacssGrpc.LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
+                    .withWaitForReady()
+                    .withCompression("gzip")
+                    .withMaxOutboundMessageSize(MAX_MESSAGE_SIZE)
+                    .withMaxInboundMessageSize(MAX_MESSAGE_SIZE)
+                    .withDeadlineAfter(180, TimeUnit.SECONDS);
 
             if (token != null) {
                 LacssTokenCredentials callCredentials = new LacssTokenCredentials(token);
                 stub = stub.withCallCredentials(callCredentials);
             }
 
-            results = stub.runDetection(inputs);
+            response = stub.runDetection(request);
 
-        } catch (StatusRuntimeException e) {
+        } catch ( StatusRuntimeException e ) {
+
+            status = e.getStatus();
+            response = null;
+
+        } catch (RuntimeException e) {
+
             status = Status.fromThrowable(e);
-            results = null;
-        }
-        finally{
+            response = null;
+
+        } finally {
             if (channel != null) {
                 channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
             }
         }
- 
-        return results;
+
+        return response;
     }
 
     @Override

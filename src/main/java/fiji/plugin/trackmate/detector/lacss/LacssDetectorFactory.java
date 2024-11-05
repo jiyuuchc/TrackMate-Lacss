@@ -32,9 +32,8 @@ import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-@Plugin( type = SpotDetectorFactory.class )
-public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > implements SpotDetectorFactory< T > 
-{
+@Plugin(type = SpotDetectorFactory.class)
+public class LacssDetectorFactory<T extends RealType<T> & NativeType<T>> implements SpotDetectorFactory<T> {
 	// detector parameter keys
 	public static final String NAME = "Lacss detector";
 
@@ -57,11 +56,11 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	 */
 
 	/** The image to operate on. Multiple frames, multiple channels. */
-	protected ImgPlus< T > img;
+	protected ImgPlus<T> img;
 
 	protected long n_ch;
 
-	protected Map< String, Object > settings;
+	protected Map<String, Object> settings;
 
 	protected String errorMessage;
 
@@ -81,31 +80,30 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 	// static void exportResource(String resourceName)
 	// {
-	// 	InputStream stream = LacssDetectorFactory.class.getResourceAsStream(resourceName);
+	// InputStream stream =
+	// LacssDetectorFactory.class.getResourceAsStream(resourceName);
 
-	// 	if (stream == null) {
-	// 		throw new RuntimeException("Cannot find resource needed: " + resourceName);
-	// 	}
+	// if (stream == null) {
+	// throw new RuntimeException("Cannot find resource needed: " + resourceName);
+	// }
 
-	// 	try {
+	// try {
 
-	// 		File outfile = File.createTempFile("lacss_", "");
-	// 		FileUtils.copyInputStreamToFile(stream, outfile);
+	// File outfile = File.createTempFile("lacss_", "");
+	// FileUtils.copyInputStreamToFile(stream, outfile);
 
-	// 		defaultModelPath = outfile.getAbsolutePath();
+	// defaultModelPath = outfile.getAbsolutePath();
 
-	// 	} catch (IOException e) {
+	// } catch (IOException e) {
 
-	// 		throw new RuntimeException("Lacss: Cannot extract model parameters");
-
-	// 	}
+	// throw new RuntimeException("Lacss: Cannot extract model parameters");
 
 	// }
 
-	private static void addOnShutdownHook()
-	{
-		Runtime.getRuntime().addShutdownHook( new Thread( new Runnable()
-		{
+	// }
+
+	private static void addOnShutdownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
 			public void run() {
 
@@ -113,7 +111,7 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 				// if (localClient != null) {
 
-				// 	localClient.shutdownLocalProcess();
+				// localClient.shutdownLocalProcess();
 				// }
 			}
 		}));
@@ -121,73 +119,70 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 
 	// private String getModelPath() throws IOException
 	// {
-	// 	if (settings.get(Constants.KEY_LACSS_MODEL) == PretrainedModel.Default) {
+	// if (settings.get(Constants.KEY_LACSS_MODEL) == PretrainedModel.Default) {
 
-	// 		return defaultModelPath;
+	// return defaultModelPath;
 
-	// 	} else {
+	// } else {
 
-	// 		return (String) settings.get(Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH);
-
-	// 	}
+	// return (String) settings.get(Constants.KEY_LACSS_CUSTOM_MODEL_FILEPATH);
 
 	// }
 
+	// }
 
-	public LacssClient getClient()
-	{
+	public LacssClient getClient() {
 		// if (settings.get(Constants.KEY_LACSS_MODEL) == PretrainedModel.Remote) {
 
-			String host = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER);
-			String token = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER_TOKEN);
+		String host = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER);
+		String token = (String) settings.get(Constants.KEY_LACSS_REMOTE_SERVER_TOKEN);
 
-			remoteClient = new LacssClient(host, token);
+		remoteClient = new LacssClient(host, token);
 
-			// Logger.IJ_LOGGER.log("Trying connecting to: " + host);
-			// Logger.IJ_LOGGER.log("Using client object: " + remoteClient.toString());
+		// Logger.IJ_LOGGER.log("Trying connecting to: " + host);
+		// Logger.IJ_LOGGER.log("Using client object: " + remoteClient.toString());
 
-			return remoteClient;
+		return remoteClient;
 
 		// } else {
 
-		// 	String modelPath = getModelPath().trim();
+		// String modelPath = getModelPath().trim();
 
-		// 	if ( localClient != null) {
-		// 		Path oldPath = Paths.get(localClient.getModelPath()).normalize();
-		// 		Path newPath = Paths.get(modelPath).normalize();
+		// if ( localClient != null) {
+		// Path oldPath = Paths.get(localClient.getModelPath()).normalize();
+		// Path newPath = Paths.get(modelPath).normalize();
 
-		// 		if (! oldPath.equals(newPath) ) {
-		// 			// Logger.IJ_LOGGER.log("Stopping previous backend.");
-		// 			// Logger.IJ_LOGGER.log("Old parameter file : " + oldPath);
-	
-		// 			localClient.shutdownLocalProcess();
-		// 			localClient = null;	
-		// 		}
+		// if (! oldPath.equals(newPath) ) {
+		// // Logger.IJ_LOGGER.log("Stopping previous backend.");
+		// // Logger.IJ_LOGGER.log("Old parameter file : " + oldPath);
 
-		// 	}
+		// localClient.shutdownLocalProcess();
+		// localClient = null;
+		// }
 
-		// 	if (localClient == null) {
-		// 		// Logger.IJ_LOGGER.log("Startng new backend.");
-		// 		// Logger.IJ_LOGGER.log("New parameter file : " + modelPath);
+		// }
 
-		// 		localClient = new LacssClient(modelPath);
-		// 	}
+		// if (localClient == null) {
+		// // Logger.IJ_LOGGER.log("Startng new backend.");
+		// // Logger.IJ_LOGGER.log("New parameter file : " + modelPath);
 
-		// 	return localClient;
+		// localClient = new LacssClient(modelPath);
+		// }
+
+		// return localClient;
 		// }
 	}
 
 	@Override
-	public SpotDetector< T > getDetector( final Interval interval, final int frame )
-	{
-		final ImgPlus< T > singleTimePoint;
+	public SpotDetector<T> getDetector(final Interval interval, final int frame) {
+		final ImgPlus<T> singleTimePoint;
 
 		// override interval to include all channels if possible
 		FinalInterval itv;
 		if ((Boolean) settings.get(Constants.KEY_MULTI_CHANNEL) && (n_ch == 2 || n_ch == 3)) {
 			int ch_dim = img.dimensionIndex(Axes.CHANNEL);
-			long [] mins = interval.minAsLongArray();
-			long [] maxs = interval.maxAsLongArray();
+			long[] mins = interval.minAsLongArray();
+			long[] maxs = interval.maxAsLongArray();
 			mins[ch_dim] = 0;
 			maxs[ch_dim] = n_ch - 1;
 			itv = new FinalInterval(mins, maxs);
@@ -195,31 +190,28 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 			itv = new FinalInterval(interval);
 		}
 
-		if ( img.dimensionIndex( Axes.TIME ) < 0 )
+		if (img.dimensionIndex(Axes.TIME) < 0)
 			singleTimePoint = img;
 		else
-			singleTimePoint = ImgPlusViews.hyperSlice( img, img.dimensionIndex( Axes.TIME ), frame );
+			singleTimePoint = ImgPlusViews.hyperSlice(img, img.dimensionIndex(Axes.TIME), frame);
 
-		final LacssDetector< T > detector = new LacssDetector<T>(
+		final LacssDetector<T> detector = new LacssDetector<T>(
 				singleTimePoint,
 				itv,
 				settings,
-				getClient()
-		);
+				getClient());
 
 		return detector;
 
 	}
 
 	@Override
-	public boolean forbidMultithreading()
-	{
+	public boolean forbidMultithreading() {
 		return true;
 	}
 
 	@Override
-	public boolean setTarget( final ImgPlus< T > img, final Map< String, Object > settings )
-	{
+	public boolean setTarget(final ImgPlus<T> img, final Map<String, Object> settings) {
 		this.img = img;
 		this.settings = settings;
 
@@ -227,11 +219,11 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		if (dc < 0) {
 			n_ch = 1;
 		} else {
-			long [] shape = img.dimensionsAsLongArray();
+			long[] shape = img.dimensionsAsLongArray();
 			n_ch = shape[img.dimensionIndex(Axes.CHANNEL)];
 		}
 
-		boolean ok = checkSettings( settings );
+		boolean ok = checkSettings(settings);
 
 		// Element element = new Element("settings");
 		// ok = ok && marshall(settings, element);
@@ -239,109 +231,108 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 		// Logger.IJ_LOGGER.log("marshall settings");
 
 		// if (ok) {
-		// 	Preferences prefs = Preferences.userNodeForPackage(LacssDetectorFactory.class);
-		// 	prefs.put("settings", new XMLOutputter().outputString(element));
-		// 	// Logger.IJ_LOGGER.log("Save prefs");
+		// Preferences prefs =
+		// Preferences.userNodeForPackage(LacssDetectorFactory.class);
+		// prefs.put("settings", new XMLOutputter().outputString(element));
+		// // Logger.IJ_LOGGER.log("Save prefs");
 		// }
 
 		return ok;
 	}
 
 	@Override
-	public String getErrorMessage()
-	{
+	public String getErrorMessage() {
 		return errorMessage;
 	}
 
 	@Override
-	public boolean marshall( final Map< String, Object > settings, final Element element )
-	{
+	public boolean marshall(final Map<String, Object> settings, final Element element) {
 		final StringBuilder errorHolder = new StringBuilder();
-		boolean ok = true; 
-		ok = ok && writeAttribute( settings, element, Constants.KEY_MIN_CELL_AREA, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, Constants.KEY_SCALING, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, Constants.KEY_NMS_IOU, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, Constants.KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, Constants.KEY_DETECTION_THRESHOLD, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, Constants.KEY_MULTI_CHANNEL, Boolean.class, errorHolder );	
-		ok = ok && writeAttribute( settings, element, Constants.KEY_LACSS_REMOTE_SERVER, String.class, errorHolder);
-		ok = ok && writeAttribute( settings, element, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, String.class, errorHolder);
+		boolean ok = true;
+		ok = ok && writeAttribute(settings, element, Constants.KEY_MIN_CELL_AREA, Double.class, errorHolder);
+		ok = ok && writeAttribute(settings, element, Constants.KEY_SCALING, Double.class, errorHolder);
+		ok = ok && writeAttribute(settings, element, Constants.KEY_NMS_IOU, Double.class, errorHolder);
+		ok = ok && writeAttribute(settings, element, Constants.KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder);
+		ok = ok && writeAttribute(settings, element, Constants.KEY_DETECTION_THRESHOLD, Double.class, errorHolder);
+		ok = ok && writeAttribute(settings, element, Constants.KEY_MULTI_CHANNEL, Boolean.class, errorHolder);
+		ok = ok && writeAttribute(settings, element, Constants.KEY_LACSS_REMOTE_SERVER, String.class, errorHolder);
+		ok = ok && writeAttribute(settings, element, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, String.class,
+				errorHolder);
 
-		if ( !ok )
+		if (!ok)
 			errorMessage = errorHolder.toString();
-		
+
 		return ok;
 	}
 
 	@Override
-	public boolean unmarshall( final Element element, final Map< String, Object > settings )
-	{
+	public boolean unmarshall(final Element element, final Map<String, Object> settings) {
 		settings.clear();
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = true;
-		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_MIN_CELL_AREA, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_SCALING, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_NMS_IOU, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_SEGMENTATION_THRESHOLD, errorHolder );
-		ok = ok && readDoubleAttribute( element, settings, Constants.KEY_DETECTION_THRESHOLD, errorHolder );
-		ok = ok && readBooleanAttribute( element, settings, Constants.KEY_MULTI_CHANNEL, errorHolder );
-		ok = ok && readStringAttribute( element, settings, Constants.KEY_LACSS_REMOTE_SERVER, errorHolder);
-		ok = ok && readStringAttribute( element, settings, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, errorHolder);
+		ok = ok && readDoubleAttribute(element, settings, Constants.KEY_MIN_CELL_AREA, errorHolder);
+		ok = ok && readDoubleAttribute(element, settings, Constants.KEY_SCALING, errorHolder);
+		ok = ok && readDoubleAttribute(element, settings, Constants.KEY_NMS_IOU, errorHolder);
+		ok = ok && readDoubleAttribute(element, settings, Constants.KEY_SEGMENTATION_THRESHOLD, errorHolder);
+		ok = ok && readDoubleAttribute(element, settings, Constants.KEY_DETECTION_THRESHOLD, errorHolder);
+		ok = ok && readBooleanAttribute(element, settings, Constants.KEY_MULTI_CHANNEL, errorHolder);
+		ok = ok && readStringAttribute(element, settings, Constants.KEY_LACSS_REMOTE_SERVER, errorHolder);
+		ok = ok && readStringAttribute(element, settings, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, errorHolder);
 
-		if ( !ok )
+		if (!ok)
 			errorMessage = errorHolder.toString();
 
-		return checkSettings( settings );
+		return checkSettings(settings);
 	}
 
 	@Override
-	public ConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
-	{
-		return new LacssDetectorConfigurationPanel( settings, model );
+	public ConfigurationPanel getDetectorConfigurationPanel(final Settings settings, final Model model) {
+		return new LacssDetectorConfigurationPanel(settings, model);
 	}
 
 	@Override
-	public Map< String, Object > getDefaultSettings()
-	{
-		final Map< String, Object > settings = new HashMap<>();
+	public Map<String, Object> getDefaultSettings() {
+		final Map<String, Object> settings = new HashMap<>();
 		boolean ok = false;
 
-		// Preferences prefs = Preferences.userNodeForPackage(LacssDetectorFactory.class);
+		// Preferences prefs =
+		// Preferences.userNodeForPackage(LacssDetectorFactory.class);
 		// String strElement = prefs.get("settings", null);
 		// // Logger.IJ_LOGGER.log(strElement);
 
 		// ok = strElement != null;
 		// if (ok) {
-		// 	try {
-		// 		SAXBuilder builder = new SAXBuilder();
-		// 		Document doc = builder.build(new StringReader(strElement));
+		// try {
+		// SAXBuilder builder = new SAXBuilder();
+		// Document doc = builder.build(new StringReader(strElement));
 
-		// 		// Logger.IJ_LOGGER.log(new XMLOutputter().outputString(doc.getRootElement()));
+		// // Logger.IJ_LOGGER.log(new
+		// XMLOutputter().outputString(doc.getRootElement()));
 
-		// 		ok = unmarshall(doc.getRootElement(), settings);
+		// ok = unmarshall(doc.getRootElement(), settings);
 
-		// 	} catch (JDOMException | IOException e) {
-		// 		errorMessage = e.getLocalizedMessage();
-		// 		ok = false;
-		// 	}
+		// } catch (JDOMException | IOException e) {
+		// errorMessage = e.getLocalizedMessage();
+		// ok = false;
+		// }
 
-		// 	if (! ok ) {
-		// 		Logger.IJ_LOGGER.log(errorMessage);
-		// 	};
+		// if (! ok ) {
+		// Logger.IJ_LOGGER.log(errorMessage);
+		// };
 
 		// }
 
-		if (! ok) {
-			settings.put( Constants.KEY_MIN_CELL_AREA, Constants.DEFAULT_MIN_CELL_AREA );
-			settings.put( Constants.KEY_SCALING, Constants.DEFAULT_SCALING);
-			settings.put( Constants.KEY_NMS_IOU, Constants.DEFAULT_NMS_IOU);
-			settings.put( Constants.KEY_SEGMENTATION_THRESHOLD, Constants.DEFAULT_SEGMENTATION_THRESHOLD);
-			settings.put( Constants.KEY_DETECTION_THRESHOLD, Constants.DEFAULT_DETECTION_THRESHOLD);
-			settings.put( Constants.KEY_MULTI_CHANNEL, Constants.DEFAULT_MULTI_CHANNEL );
-			settings.put( Constants.KEY_LACSS_REMOTE_SERVER, Constants.DEFAULT_LACSS_REMOTE_SERVER );
-			settings.put( Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, Constants.DEFAULT_LACSS_REMOTE_SERVER_TOKEN );
-			settings.put( Constants.KEY_LOGGER, Logger.DEFAULT_LOGGER );
-	
+		if (!ok) {
+			settings.put(Constants.KEY_MIN_CELL_AREA, Constants.DEFAULT_MIN_CELL_AREA);
+			settings.put(Constants.KEY_SCALING, Constants.DEFAULT_SCALING);
+			settings.put(Constants.KEY_NMS_IOU, Constants.DEFAULT_NMS_IOU);
+			settings.put(Constants.KEY_SEGMENTATION_THRESHOLD, Constants.DEFAULT_SEGMENTATION_THRESHOLD);
+			settings.put(Constants.KEY_DETECTION_THRESHOLD, Constants.DEFAULT_DETECTION_THRESHOLD);
+			settings.put(Constants.KEY_MULTI_CHANNEL, Constants.DEFAULT_MULTI_CHANNEL);
+			settings.put(Constants.KEY_LACSS_REMOTE_SERVER, Constants.DEFAULT_LACSS_REMOTE_SERVER);
+			settings.put(Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, Constants.DEFAULT_LACSS_REMOTE_SERVER_TOKEN);
+			settings.put(Constants.KEY_LOGGER, Logger.DEFAULT_LOGGER);
+
 		}
 
 		// Logger.IJ_LOGGER.log(settings.toString());
@@ -350,82 +341,74 @@ public class LacssDetectorFactory< T extends RealType< T > & NativeType< T > > i
 	}
 
 	@Override
-	public boolean checkSettings( final Map< String, Object > settings )
-	{
+	public boolean checkSettings(final Map<String, Object> settings) {
 		boolean ok = true;
 		final StringBuilder errorHolder = new StringBuilder();
-		ok = ok & checkParameter( settings, Constants.KEY_MIN_CELL_AREA, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, Constants.KEY_SCALING, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, Constants.KEY_NMS_IOU, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, Constants.KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, Constants.KEY_DETECTION_THRESHOLD, Double.class, errorHolder );		
-		ok = ok & checkParameter( settings, Constants.KEY_MULTI_CHANNEL, Boolean.class, errorHolder );		
-		ok = ok & checkParameter( settings, Constants.KEY_LACSS_REMOTE_SERVER, String.class, errorHolder );		
-		ok = ok & checkParameter( settings, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, String.class, errorHolder );		
+		ok = ok & checkParameter(settings, Constants.KEY_MIN_CELL_AREA, Double.class, errorHolder);
+		ok = ok & checkParameter(settings, Constants.KEY_SCALING, Double.class, errorHolder);
+		ok = ok & checkParameter(settings, Constants.KEY_NMS_IOU, Double.class, errorHolder);
+		ok = ok & checkParameter(settings, Constants.KEY_SEGMENTATION_THRESHOLD, Double.class, errorHolder);
+		ok = ok & checkParameter(settings, Constants.KEY_DETECTION_THRESHOLD, Double.class, errorHolder);
+		ok = ok & checkParameter(settings, Constants.KEY_MULTI_CHANNEL, Boolean.class, errorHolder);
+		ok = ok & checkParameter(settings, Constants.KEY_LACSS_REMOTE_SERVER, String.class, errorHolder);
+		ok = ok & checkParameter(settings, Constants.KEY_LACSS_REMOTE_SERVER_TOKEN, String.class, errorHolder);
 
 		// If we have a logger, test it is of the right class.
-		final Object loggerObj = settings.get( Constants.KEY_LOGGER );
-		if ( loggerObj != null && !Logger.class.isInstance( loggerObj ) )
-		{
-			errorHolder.append( "Value for parameter " + Constants.KEY_LOGGER + " is not of the right class. "
-					+ "Expected " + Logger.class.getName() + ", got " + loggerObj.getClass().getName() + ".\n" );
+		final Object loggerObj = settings.get(Constants.KEY_LOGGER);
+		if (loggerObj != null && !Logger.class.isInstance(loggerObj)) {
+			errorHolder.append("Value for parameter " + Constants.KEY_LOGGER + " is not of the right class. "
+					+ "Expected " + Logger.class.getName() + ", got " + loggerObj.getClass().getName() + ".\n");
 			ok = false;
 		}
 
-		final List< String > mandatoryKeys = Arrays.asList(
-			Constants.KEY_LACSS_REMOTE_SERVER,
-			Constants.KEY_LACSS_REMOTE_SERVER_TOKEN);
+		final List<String> mandatoryKeys = Arrays.asList(
+				Constants.KEY_LACSS_REMOTE_SERVER,
+				Constants.KEY_LACSS_REMOTE_SERVER_TOKEN);
 
-		final List< String > optionalKeys = Arrays.asList(
-			Constants.KEY_MIN_CELL_AREA,
-			Constants.KEY_SCALING,
-			Constants.KEY_NMS_IOU,
-			Constants.KEY_MULTI_CHANNEL,
-			Constants.KEY_SEGMENTATION_THRESHOLD,
-			Constants.KEY_DETECTION_THRESHOLD,
-			Constants.KEY_LOGGER );
+		final List<String> optionalKeys = Arrays.asList(
+				Constants.KEY_MIN_CELL_AREA,
+				Constants.KEY_SCALING,
+				Constants.KEY_NMS_IOU,
+				Constants.KEY_MULTI_CHANNEL,
+				Constants.KEY_SEGMENTATION_THRESHOLD,
+				Constants.KEY_DETECTION_THRESHOLD,
+				Constants.KEY_LOGGER);
 
-		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
+		ok = ok & checkMapKeys(settings, mandatoryKeys, optionalKeys, errorHolder);
 
-		if ( !ok )
+		if (!ok)
 			errorMessage = errorHolder.toString();
 
 		return ok;
 	}
 
 	@Override
-	public String getInfoText()
-	{
+	public String getInfoText() {
 		return INFO_TEXT;
 	}
 
 	@Override
-	public ImageIcon getIcon()
-	{
+	public ImageIcon getIcon() {
 		return null;
 	}
 
 	@Override
-	public String getKey()
-	{
+	public String getKey() {
 		return Constants.LACSS_DETECTOR_KEY;
 	}
 
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return NAME;
 	}
 
 	@Override
-	public boolean has2Dsegmentation()
-	{
+	public boolean has2Dsegmentation() {
 		return true;
 	}
 
 	@Override
-	public SpotDetectorFactoryBase< T > copy()
-	{
+	public SpotDetectorFactoryBase<T> copy() {
 		return new LacssDetectorFactory<>();
-	}    
+	}
 }

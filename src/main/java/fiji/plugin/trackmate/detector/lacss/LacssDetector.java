@@ -7,6 +7,15 @@ import java.util.Map;
 
 import com.google.protobuf.ByteString;
 
+import biopb.lacss.BinData;
+import biopb.lacss.DetectionRequest;
+import biopb.lacss.DetectionResponse;
+import biopb.lacss.DetectionSettings;
+import biopb.lacss.ImageData;
+import biopb.lacss.Pixels;
+import biopb.lacss.Point;
+import biopb.lacss.ROI;
+import biopb.lacss.ScoredROI;
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.SpotRoi;
@@ -14,6 +23,7 @@ import fiji.plugin.trackmate.detection.SpotDetector;
 import fiji.plugin.trackmate.util.TMUtils;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
@@ -31,7 +41,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 	protected final Interval interval;
 
-	protected final Map< String, Object > settings;
+	protected final Map<String, Object> settings;
 
 	private final Logger logger;
 
@@ -43,115 +53,144 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 	protected List<Spot> spots;
 
-    private final LacssClient client;
+	private final LacssClient client;
 
 	public LacssDetector(
 			final ImgPlus<T> img,
 			final Interval interval,
-			final Map< String, Object > settings,
-			final LacssClient client ) 
-	{
+			final Map<String, Object> settings,
+			final LacssClient client) {
 		this.img = img;
 		this.interval = interval;
 		this.settings = settings;
-		Logger logger = ( Logger ) settings.get( Constants.KEY_LOGGER );
+		Logger logger = (Logger) settings.get(Constants.KEY_LOGGER);
 		this.logger = (logger == null) ? Logger.VOID_LOGGER : logger;
 		this.baseErrorMessage = BASE_ERROR_MESSAGE;
 		this.client = client;
 	}
 
-	private boolean getDetections(RandomAccessibleInterval<T> crop, LacssMsg.Settings settings)
-	{
-		long[] dims = crop.dimensionsAsLongArray();
-		long n_ch = 1;
-		long depth = 1;
-		int ch_c = img.dimensionIndex(Axes.CHANNEL);
-		int ch_y = img.dimensionIndex(Axes.Y);
-		int ch_x = img.dimensionIndex(Axes.X);
-		int ch_z = img.dimensionIndex(Axes.Z);
+	private long getDim(AxisType axis) {
+		if (img.dimensionIndex(axis) >= 0) {
 
-		if (ch_c != -1) {
-			n_ch = dims[img.dimensionIndex(Axes.CHANNEL)];
-		} 
-		final long height = dims[ch_y];
-		final long width = dims[ch_x];
-		if (ch_z != -1) {
-			depth = dims[ch_z];
+			return interval.dimension(img.dimensionIndex(axis));
+
+		} else {
+			return 0L;
 		}
+	}
+
+	private long getIntervalSize() {
+		long size = 1L;
+		for (int i = 0; i < interval.numDimensions(); i++) {
+			if ( interval.dimension(i) > 0 )
+				size = size * interval.dimension(i);
+		}
+		return size;
+	}
+
+	private float getFloat(String key) {
+		Double v = (Double) settings.get(key);
+		return v.floatValue();
+	}
+
+	DetectionSettings getCurrentSettings() {
+		DetectionSettings detectionSettings = DetectionSettings.newBuilder()
+				.setMinScore(getFloat(Constants.KEY_DETECTION_THRESHOLD))
+				.setMinCellArea(getFloat(Constants.KEY_MIN_CELL_AREA))
+				.setNmsIou(getFloat(Constants.KEY_NMS_IOU))
+				.setSegmentationThreshold(getFloat(Constants.KEY_SEGMENTATION_THRESHOLD))
+				.setScalingHint(getFloat(Constants.KEY_SCALING))
+				.build();
+
+		return detectionSettings;
+	}
+
+	ImageData packImageData() {
+		RandomAccessibleInterval<T> crop = Views.interval(img, interval);
+
 		final double[] calibration = TMUtils.getSpatialCalibration(img);
 
-		ByteBuffer data = ByteBuffer.allocate((int) (depth * width * height * n_ch * Float.BYTES));
+		// add Z axis if needed at dim 2
+		if (img.dimensionIndex(Axes.Z) <= 0) {
+			int nd = crop.numDimensions();
 
-		RealType< T > in = Util.getTypeFromInterval( crop );
-		Converter<RealType<T>, FloatType> converter = RealTypeConverters.getConverter( in, new FloatType());
+			crop = Views.addDimension(crop, 0, 0);
+			crop = Views.permute(crop, 2, nd);
 
-		long [] pos = new long[dims.length];
+		}
 
-		for (long idx = 0; idx < (int)(depth * width * height * n_ch) ; idx+=1) { // enfore z-y-x-c format
-			if (ch_c != -1) {
-				pos[ch_c] = idx % n_ch ;
-			}
-			pos[ch_x] = ( idx / n_ch ) % width + crop.min(ch_x);
-			pos[ch_y] = (idx / (n_ch * width)) % height + crop.min(ch_y);
-			if (ch_z != -1) {
-				pos[ch_z] = idx / (n_ch * width * height);
-			}
+		// copy to byte array.
+		final RealType<T> in = Util.getTypeFromInterval(crop);
+		Converter<RealType<T>, FloatType> converter = RealTypeConverters.getConverter(in, new FloatType());
+		ByteBuffer buffer = ByteBuffer.allocate((int) (getIntervalSize() * Float.BYTES));
+
+		// flat iterator ensure XYZC order
+		for (T pixel : Views.flatIterable(crop)) {
 
 			FloatType value = new FloatType();
-			converter.convert(crop.getAt(pos), value);
 
-			data.putFloat(value.get());
+			converter.convert(pixel, value);
+
+			buffer.putFloat(value.get());
+
 		}
 
-		LacssMsg.Image encoded_img = LacssMsg.Image.newBuilder()
-				.setWidth(width)
-				.setHeight(height)
-				.setChannel(n_ch)
-				.setDepth(depth)
-				.setData(ByteString.copyFrom(data.array()))
+		// serialize
+		BinData bindata = BinData.newBuilder()
+				.setData(ByteString.copyFrom(buffer.array()))
+				.setEndianness(BinData.Endianness.BIG)
 				.build();
 
-		LacssMsg.Input inputs = LacssMsg.Input.newBuilder()
-				.setImage(encoded_img)
-				.setSettings(settings)
+		Pixels pixels = Pixels.newBuilder()
+				.setDimensionOrder("XYZCT")
+				.setBindata(bindata)
+				.setDtype("f4")
+				.setSizeX((int) getDim(Axes.X))
+				.setSizeY((int) getDim(Axes.Y))
+				.setSizeZ((int) getDim(Axes.Z))
+				.setPhysicalSizeX((float) calibration[0])
+				.setPhysicalSizeY((float) calibration[1])
+				.setPhysicalSizeZ((float) calibration[2])
 				.build();
 
-		LacssMsg.Results msg;
-		try {
+		ImageData imageData = ImageData.newBuilder()
+				.setPixels(pixels)
+				.build();
 
-			// Logger.IJ_LOGGER.log("Connecting to server" + client.toString());
+		return imageData;
 
-			msg = client.runDetection(inputs);
-			
-		} catch (InterruptedException e) {
-			errorMessage = baseErrorMessage + e.getLocalizedMessage();
-			return false;
-			// logger.error(BASE_ERROR_MESSAGE + e.getLocalizedMessage());
-		} 
+	}
 
-		if (msg == null) {
-			errorMessage = baseErrorMessage + client.status.getCode();
-			Logger.IJ_LOGGER.error("server returned error code: " + client.status.getCode() + "\n");
-			Logger.IJ_LOGGER.error(client.status.getDescription());
-			return false;
-		}
+	boolean processResponse(DetectionResponse response) {
+		final double[] calibration = TMUtils.getSpatialCalibration(img);
 
-		int n_spots = msg.getRoisCount();
-		spots = new ArrayList<>( n_spots );
-		for ( LacssMsg.Roi roi : msg.getRoisList()) {
-			if (depth == 1) {
-				LacssMsg.Polygon polygon = roi.getPolygon();
-				float score = polygon.getScore();
-				List<LacssMsg.Point> points = polygon.getPointsList();
-	
-				double [] x = new double[points.size()];
-				double [] y = new double[points.size()];
+		int n_spots = response.getDetectionsCount();
+
+		spots = new ArrayList<>(n_spots);
+
+		for (ScoredROI scoredRoi : response.getDetectionsList()) {
+
+			float score = scoredRoi.getScore();
+			ROI roi = scoredRoi.getRoi();
+
+			if (getDim(Axes.Z) == 0) {
+				if (!roi.hasPolygon()) {
+
+					errorMessage = baseErrorMessage + "data is 2D but server did not return polygons.";
+
+					return false;
+				}
+
+				List<Point> points = roi.getPolygon().getPointsList();
+
+				double[] x = new double[points.size()];
+				double[] y = new double[points.size()];
 
 				int cnt = 0;
-				for (LacssMsg.Point point : points) {
-				
-					x[cnt] = calibration[ch_x] * ( crop.min(ch_x) + point.getX() );
-					y[cnt] = calibration[ch_y] * ( crop.min(ch_y) + point.getY() );
+				for (Point point : points) {
+
+					x[cnt] = calibration[0] * (interval.min(0) + point.getX());
+					y[cnt] = calibration[1] * (interval.min(1) + point.getY());
 
 					cnt += 1;
 				}
@@ -159,65 +198,87 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 				spots.add(SpotRoi.createSpot(x, y, score * 100));
 
 			} else {
-				
-				LacssMsg.Mesh mesh = roi.getMesh();
-				float score = mesh.getScore();
-				float zc = 0, yc = 0, xc = 0, zc2 = 0, yc2 = 0, xc2 = 0;
 
-				for ( LacssMsg.Point vert : mesh.getVertsList()) {
+				if (!roi.hasMesh()) {
+
+					errorMessage = baseErrorMessage + "data is 3D but server did not return meshes.";
+
+					return false;
+				}
+
+				float zc = 0, yc = 0, xc = 0, zc2 = 0, yc2 = 0, xc2 = 0;
+				int nVerts = roi.getMesh().getVertsCount();
+
+				for (Point vert : roi.getMesh().getVertsList()) {
 					zc += vert.getZ();
 					yc += vert.getY();
 					xc += vert.getX();
-					zc2 += vert.getZ() * vert.getZ()  ;
+					zc2 += vert.getZ() * vert.getZ();
 					yc2 += vert.getY() * vert.getY();
 					xc2 += vert.getX() * vert.getX();
 				}
 
-				zc = zc / mesh.getVertsCount();
-				yc = yc / mesh.getVertsCount();
-				xc = xc / mesh.getVertsCount();
-				zc2 = zc2 / mesh.getVertsCount() - zc * zc; 
-				yc2 = yc2 / mesh.getVertsCount() - yc * yc;
-				xc2 = xc2 / mesh.getVertsCount() - xc * xc;
+				zc = zc / nVerts;
+				yc = yc / nVerts;
+				xc = xc / nVerts;
+				zc2 = zc2 / nVerts - zc * zc;
+				yc2 = yc2 / nVerts - yc * yc;
+				xc2 = xc2 / nVerts - xc * xc;
 
 				double radius = Math.sqrt((zc2 + yc2 + xc2)) / 3;
 
 				spots.add(new Spot(
-					(xc + crop.min(ch_x)) * calibration[0], 
-					(yc + crop.min(ch_y)) * calibration[1],
-					(zc + crop.min(ch_z)) * calibration[2],
-					 radius, score*100));
+						(xc + interval.min(0)) * calibration[0],
+						(yc + interval.min(1)) * calibration[1],
+						(zc + interval.min(2)) * calibration[2],
+						radius,
+						score * 100));
 			}
 		}
 
 		return true;
 	}
 
-	private float getFloat(String key)
-	{
-		Double v = (Double) settings.get(key);
-		return v.floatValue();
-	}
-
 	@Override
 	public boolean process() {
+		boolean status = true;
+
 		final long start = System.currentTimeMillis();
 
-		final RandomAccessibleInterval<T> rai = Views.interval(img, interval);
+		DetectionRequest request = DetectionRequest.newBuilder()
+				.setDetectionSettings(getCurrentSettings())
+				.setImageData(packImageData())
+				.build();
 
-		LacssMsg.Settings settingMsg = LacssMsg.Settings.newBuilder()
-			.setDetectionThreshold(getFloat(Constants.KEY_DETECTION_THRESHOLD))
-			.setMinCellArea(getFloat(Constants.KEY_MIN_CELL_AREA))
-			.setScaling(getFloat(Constants.KEY_SCALING))
-			.setNmsIou(getFloat(Constants.KEY_NMS_IOU))
-			.setSegmentationThreshold(getFloat(Constants.KEY_SEGMENTATION_THRESHOLD))
-			.setDetectionThreshold(getFloat(Constants.KEY_DETECTION_THRESHOLD))
-			.setReturnPolygon(true)
-			.build();
+		try {
 
-		boolean status = getDetections(rai, settingMsg); // blocking
+			// Logger.IJ_LOGGER.log("Connecting to server" + client.toString());
+
+			DetectionResponse response = client.runDetection(request);
+
+			if (response == null) {
+				errorMessage = baseErrorMessage + "server returned error code: " 
+					+ client.status.getCode() + "\n"
+					+ client.status.getDescription();
+
+				status = false;
+
+			} else {
+
+				status = processResponse(response);
+
+			}
+
+		} catch (InterruptedException e) {
+
+			errorMessage = baseErrorMessage + e.getLocalizedMessage();
+
+			status = false;
+
+		}
 
 		final long end = System.currentTimeMillis();
+
 		this.processingTime = end - start;
 
 		return status;
@@ -235,8 +296,9 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 			return false;
 		}
 		// if (img.dimensionIndex(Axes.Z) >= 0) {
-		// 	errorMessage = baseErrorMessage + "Image must be 2D over time, got an image with multiple Z.";
-		// 	return false;
+		// errorMessage = baseErrorMessage + "Image must be 2D over time, got an image
+		// with multiple Z.";
+		// return false;
 		// }
 		return true;
 	}
