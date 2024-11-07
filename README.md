@@ -31,7 +31,7 @@ By default, trackmate-lacss will try to connect to the public server that we set
 
 **Step 1:** Install Lacss
 ```
-pip install lacss
+pip install lacss[cuda12]
 ```
 You probabaly want to create a virtual environment for this.
 
