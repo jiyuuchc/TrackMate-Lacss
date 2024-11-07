@@ -6,8 +6,8 @@ option java_package = "biopb.lacss";
 option java_multiple_files = true;
 
 
-import "lacss/roi.proto";
-import "lacss/bindata.proto";
+import "biopb/lacss/roi.proto";
+import "biopb/lacss/bindata.proto";
 
 // The Pixels element represent generic 5D pixel data. The time axis is
 // currently not being utilized, but is defined here for futire extensibility.

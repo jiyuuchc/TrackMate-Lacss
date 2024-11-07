@@ -5,7 +5,7 @@ package biopb.ome;
 option java_package = "biopb.ome";
 option java_multiple_files = true;
 
-import "ome/microbeam_manipulation.proto";
+import "biopb/ome/microbeam_manipulation.proto";
 
 // This element describes the type of experiment. 
 message Experiment {

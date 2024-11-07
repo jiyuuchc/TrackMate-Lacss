@@ -5,7 +5,7 @@ package biopb.ome;
 option java_package = "biopb.ome";
 option java_multiple_files = true;
 
-import "ome/reagent.proto";
+import "biopb/ome/reagent.proto";
 
 // The Screen element is a grouping for Plates. The required attribute is the
 // Screen's Name, which must be unique within the document. The Screen element

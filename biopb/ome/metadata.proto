@@ -5,18 +5,18 @@ package biopb.ome;
 option java_package = "biopb.ome";
 option java_multiple_files = true;
 
-import "ome/project.proto";
-import "ome/dataset.proto";
-import "ome/folder.proto";
-import "ome/experiment.proto";
-import "ome/plate.proto";
-import "ome/screen.proto";
-import "ome/experimenter.proto";
-import "ome/experimenter_group.proto";
-import "ome/instrument.proto";
-import "ome/image.proto";
-import "ome/annotation.proto";
-import "ome/roi.proto";
+import "biopb/ome/project.proto";
+import "biopb/ome/dataset.proto";
+import "biopb/ome/folder.proto";
+import "biopb/ome/experiment.proto";
+import "biopb/ome/plate.proto";
+import "biopb/ome/screen.proto";
+import "biopb/ome/experimenter.proto";
+import "biopb/ome/experimenter_group.proto";
+import "biopb/ome/instrument.proto";
+import "biopb/ome/image.proto";
+import "biopb/ome/annotation.proto";
+import "biopb/ome/roi.proto";
 
 // Metadata is the main part of the OME specification
 //

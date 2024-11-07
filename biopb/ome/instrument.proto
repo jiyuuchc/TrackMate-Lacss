@@ -5,12 +5,12 @@ package biopb.ome;
 option java_package = "biopb.ome";
 option java_multiple_files = true;
 
-import "ome/microscope.proto";
-import "ome/light_source.proto";
-import "ome/detector.proto";
-import "ome/objective.proto";
-import "ome/filter_set.proto";
-import "ome/filter.proto";
+import "biopb/ome/microscope.proto";
+import "biopb/ome/light_source.proto";
+import "biopb/ome/detector.proto";
+import "biopb/ome/objective.proto";
+import "biopb/ome/filter_set.proto";
+import "biopb/ome/filter.proto";
 
 // This element describes the instrument used to capture the Image. It is
 // primarily a container for manufacturer's model and catalog numbers for the

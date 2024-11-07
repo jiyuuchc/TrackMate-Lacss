@@ -6,8 +6,8 @@ option java_package = "biopb.ome";
 option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
-import "ome/objective_setting.proto";
-import "ome/pixel.proto";
+import "biopb/ome/objective_setting.proto";
+import "biopb/ome/pixel.proto";
 
 // This describes the environment that the biological sample was in
 // during the experiment.

@@ -6,7 +6,7 @@ option java_package = "biopb.lacss";
 option java_multiple_files = true;
 
 
-import "lacss/roi.proto";
+import "biopb/lacss/roi.proto";
 
 message ScoredROI {
 

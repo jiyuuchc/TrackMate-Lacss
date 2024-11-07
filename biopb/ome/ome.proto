@@ -5,9 +5,9 @@ package biopb.ome;
 option java_package = "biopb.ome";
 option java_multiple_files = true;
 
-import "ome/rights.proto";
-import "ome/metadata.proto";
-import "ome/metadata_ref.proto";
+import "biopb/ome/rights.proto";
+import "biopb/ome/metadata.proto";
+import "biopb/ome/metadata_ref.proto";
 
 // Protobuf equivalent of the OME-XML format
 //
