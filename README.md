@@ -8,24 +8,26 @@ It also add a ```Plugins/Segmntation/Lacss``` menu item, so that you can also pe
 
 ## How does it work
 
-This simple Java plugin communicates with the open [GRPC](https://grpc.io/) server (lacss.cam.uchc.edu). The pixel data are sent via internet. The computation is done on the server side. You can obtained results quickly without local GPU hardware support.
+This simple Java plugin communicates with the open [GRPC](https://grpc.io/) server (lacss.cam.uchc.edu). The pixel data are sent via internet. The computation is done on the server side. You can obtained results quickly even if you are on a low-end computer without GPU.
 
 ## Installation
 
-Install Trackmate-Lacss plugin via FIJI's the built-in updater, i.e. ```Help/Update/Manage update sites```.
+Install Trackmate-Lacss plugin via Fiji's the built-in updater, i.e. ```Help/Update/Manage update sites```.
 
 | <img src="https://github.com/jiyuuchc/Trackmate-Lacss/raw/main/.github/images/trackmate_img_3.png" height="350"> | <img src="https://github.com/jiyuuchc/Trackmate-Lacss/raw/main/.github/images/trackmate_img_4.png" height="350"> |
 
 
 ## Usage
-Start TrackMate in FIJI. At the detector selection page, select "Lacss detector" from the dropdown menu.
+Start TrackMate in Fiji (`Plugins/Tracking/TrackMate`). At the detector selection page, select "Lacss detector" from the dropdown menu.
 
 <img src=".github/images/trackmate_img_1.png" height="350">
 
 
-## Setup your own server
+## Not using the public server
 
-Requirement: A linux system with an NVidia GPU.
+By default, trackmate-lacss will try to connect to the public server that we setup at lacss.cam.uchc.edu. However, you can also easily setup your own server, which allows for faster reponse and better data security.
+
+#### Requirement: A linux system with an NVidia GPU.
 
 **Step 1:** Install Lacss
 ```
