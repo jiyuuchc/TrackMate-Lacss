@@ -6,7 +6,7 @@ option java_package = "biopb.lacss";
 option java_multiple_files = true;
 
 
-import "lacss/bindata.proto";
+import "biopb/lacss/bindata.proto";
 
 /////////////
 // ROI classes are desgined roughly after OME-XML's related datatypes, but with

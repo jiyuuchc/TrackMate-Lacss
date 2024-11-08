@@ -6,8 +6,8 @@ option java_package = "biopb.lacss";
 option java_multiple_files = true;
 
 import "google/protobuf/field_mask.proto";
-import "lacss/image_data.proto";
-import "lacss/detection_settings.proto";
+import "biopb/lacss/image_data.proto";
+import "biopb/lacss/detection_settings.proto";
 
 
 message DetectionRequest {

@@ -5,10 +5,10 @@ package biopb.ome;
 option java_package = "biopb.ome";
 option java_multiple_files = true;
 
-import "ome/bindata.proto";
-import "ome/light_source_setting.proto";
-import "ome/detector_setting.proto";
-import "ome/lightpath.proto";
+import "biopb/ome/bindata.proto";
+import "biopb/ome/light_source_setting.proto";
+import "biopb/ome/detector_setting.proto";
+import "biopb/ome/lightpath.proto";
 
 // The Plane object holds microscope stage and image timing data
 // for a given channel/z-section/timepoint.

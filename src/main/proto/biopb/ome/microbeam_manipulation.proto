@@ -5,7 +5,7 @@ package biopb.ome;
 option java_package = "biopb.ome";
 option java_multiple_files = true;
 
-import "ome/light_source_setting.proto";
+import "biopb/ome/light_source_setting.proto";
 
 enum ManipulationType {
     UNSPECIFIED = 0;
