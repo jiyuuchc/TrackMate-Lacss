@@ -27,13 +27,12 @@ import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converter;
-import net.imglib2.converter.RealTypeConverters;
 import net.imglib2.mesh.Mesh;
 import net.imglib2.mesh.impl.naive.NaiveDoubleMesh;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 
@@ -123,18 +122,48 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 		}
 
 		// copy to byte array.
+
+		String dtype = "f4";
+		int elementBytes = Float.BYTES;
+
 		final RealType<T> in = Util.getTypeFromInterval(crop);
-		Converter<RealType<T>, FloatType> converter = RealTypeConverters.getConverter(in, new FloatType());
-		ByteBuffer buffer = ByteBuffer.allocate((int) (getIntervalSize() * Float.BYTES));
+		if ( in.getClass() == UnsignedShortType.class ) {
+
+			dtype = "u2";
+			elementBytes = 2;
+
+		} else if ( in.getClass() == UnsignedByteType.class ) {
+
+			dtype = "u1";
+			elementBytes = 1;
+
+		}
+
+		ByteBuffer buffer = ByteBuffer.allocate((int) (getIntervalSize() * elementBytes ));
 
 		// flat iterator ensure XYZC order
 		for (T pixel : Views.flatIterable(crop)) {
 
-			FloatType value = new FloatType();
+			float value = pixel.getRealFloat();
 
-			converter.convert(pixel, value);
+			if ( dtype == "f4" ) {
 
-			buffer.putFloat(value.get());
+				buffer.putFloat( value ) ;
+				
+			} else if ( dtype == "u2" ) {
+
+				int intValue = (int) value;
+				buffer.putChar( (char) (intValue & 0xffff) );
+				
+			} else if ( dtype == "u1" ) {
+
+				int intValue = (int) value;
+				buffer.put( (byte) (intValue & 0xff) );
+
+			} else {
+				// shouldn't reach
+				throw new AssertionError("unexpected dtype value: " + dtype ); 
+			}
 
 		}
 
@@ -147,7 +176,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 		Pixels pixels = Pixels.newBuilder()
 				.setDimensionOrder("XYZCT")
 				.setBindata(bindata)
-				.setDtype("f4")
+				.setDtype(dtype)
 				.setSizeX((int) getDim(Axes.X))
 				.setSizeY((int) getDim(Axes.Y))
 				.setSizeZ((int) getDim(Axes.Z))
