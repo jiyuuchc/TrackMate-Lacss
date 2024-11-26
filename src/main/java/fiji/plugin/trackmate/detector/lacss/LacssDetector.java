@@ -7,15 +7,15 @@ import java.util.Map;
 
 import com.google.protobuf.ByteString;
 
-import biopb.lacss.BinData;
-import biopb.lacss.DetectionRequest;
-import biopb.lacss.DetectionResponse;
-import biopb.lacss.DetectionSettings;
-import biopb.lacss.ImageData;
-import biopb.lacss.Pixels;
-import biopb.lacss.Point;
-import biopb.lacss.ROI;
-import biopb.lacss.ScoredROI;
+import biopb.image.BinData;
+import biopb.image.DetectionRequest;
+import biopb.image.DetectionResponse;
+import biopb.image.DetectionSettings;
+import biopb.image.ImageData;
+import biopb.image.Pixels;
+import biopb.image.Point;
+import biopb.image.ROI;
+import biopb.image.ScoredROI;
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.SpotRoi;

@@ -3,9 +3,9 @@ package fiji.plugin.trackmate.detector.lacss;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import biopb.lacss.LacssGrpc;
-import biopb.lacss.DetectionRequest;
-import biopb.lacss.DetectionResponse;
+import biopb.image.ObjectDetectionGrpc;
+import biopb.image.DetectionRequest;
+import biopb.image.DetectionResponse;
 import io.grpc.ChannelCredentials;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
@@ -94,7 +94,7 @@ public class LacssClient {
 
         try {
             channel = getChannel();
-            LacssGrpc.LacssBlockingStub stub = LacssGrpc.newBlockingStub(channel)
+            ObjectDetectionGrpc.ObjectDetectionBlockingStub stub = ObjectDetectionGrpc.newBlockingStub(channel)
                     .withWaitForReady()
                     .withCompression("gzip")
                     .withMaxOutboundMessageSize(MAX_MESSAGE_SIZE)
