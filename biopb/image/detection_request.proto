@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package biopb.lacss;
+package biopb.image;
 
-option java_package = "biopb.lacss";
+option java_package = "biopb.image";
 option java_multiple_files = true;
 
 import "google/protobuf/field_mask.proto";
-import "biopb/lacss/image_data.proto";
-import "biopb/lacss/detection_settings.proto";
+import "biopb/image/image_data.proto";
+import "biopb/image/detection_settings.proto";
 
 
 message DetectionRequest {

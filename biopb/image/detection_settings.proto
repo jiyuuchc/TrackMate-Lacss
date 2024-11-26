@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package biopb.lacss;
+package biopb.image;
 
-option java_package = "biopb.lacss";
+option java_package = "biopb.image";
 option java_multiple_files = true;
 
 import "google/protobuf/any.proto";
