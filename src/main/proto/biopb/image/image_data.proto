@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package biopb.lacss;
+package biopb.image;
 
-option java_package = "biopb.lacss";
+option java_package = "biopb.image";
 option java_multiple_files = true;
 
 
-import "biopb/lacss/roi.proto";
-import "biopb/lacss/bindata.proto";
+import "biopb/image/roi.proto";
+import "biopb/image/bindata.proto";
 
 // The Pixels element represent generic 5D pixel data. The time axis is
 // currently not being utilized, but is defined here for futire extensibility.
@@ -49,13 +49,25 @@ message Pixels {
     // physical size unit, default "µm"
     string physical_size_unit = 17;
 
-    // TimeIncrement is used for time series that have a global timing
+    // time_increment is used for time series that have a global timing
     // specification instead of per-timepoint timing info. For example in a
     // video stream. Units are set by TimeIncrementUnit.
     optional float time_increment = 18;
 
     // time unit, default "s"
     string time_increment_unit = 21;
+
+    // for large image dataset, it is necessary to send a stream of image
+    // patches instead of one monolithic data structure of the whole dataset.
+    // The offset values allows one to specify the relative locations of each
+    // patch.
+    optional uint32 offset_x = 22;
+
+    optional uint32 offset_y = 23;
+
+    optional uint32 offset_z = 24;
+
+    optional uint32 offset_t = 25;
 
 }
 
@@ -69,8 +81,13 @@ message ImageAnnotation {
 
 message ImageData {
 
+    // Encapsulated image data
     Pixels pixels = 1;
 
+    // Optional additional information regarding the image that will be utilized
+    // by the RPC call. For example, some SegmentAnything type models may ask
+    // the user to provide a tentative bounding box for the objects that the
+    // users are interested in.
     ImageAnnotation image_annotation = 2;
 
 }

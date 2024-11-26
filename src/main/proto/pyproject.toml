@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "biopb"
+version = "0.1.0"
+requires-python = ">=3.8"
+authors = [ {name = "Ji Yu", email = "jyu@uchc.edu" } ]
+description = "A place for collecting protobuf definitions for bio-research data"
+readme = "README.md"
+license = {file = "LICENSE"}
+
+[project.urls]
+Homepage = "https://github.com/jiyuuchc/biopb"
+Documentation = "https://jiyuuchc.github.io/biopb/"
+
+[tool.setuptools.packages.find]
+where = ["gen/python"]
