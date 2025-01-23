@@ -2,7 +2,7 @@ package fiji.plugin.trackmate.lacss;
 
 import fiji.plugin.trackmate.TrackMatePlugIn;
 import ij.IJ;
-import ij.ImageJ;
+// import ij.ImageJ;
 import ij.ImagePlus;
 
 public class LacssFullTest
