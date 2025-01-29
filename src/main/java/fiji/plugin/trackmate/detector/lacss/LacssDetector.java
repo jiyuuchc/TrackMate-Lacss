@@ -12,6 +12,7 @@ import biopb.image.DetectionRequest;
 import biopb.image.DetectionResponse;
 import biopb.image.DetectionSettings;
 import biopb.image.ImageData;
+import biopb.image.Mesh.Face;
 import biopb.image.Pixels;
 import biopb.image.Point;
 import biopb.image.ROI;
@@ -249,7 +250,7 @@ public class LacssDetector<T extends RealType<T> & NativeType<T>> implements Spo
 
 				}
 
-				for ( Face face : roi.getMesh().getFacesList() ) {
+				for ( Face face :  roi.getMesh().getFacesList() ) {
 
 					output.triangles().add(
 						face.getP1(),
