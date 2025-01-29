@@ -8,7 +8,7 @@ It also add a ```Plugins/Segmntation/Lacss``` menu item, so that you can also pe
 
 ## How does it work
 
-This simple Java plugin communicates with the open [GRPC](https://grpc.io/) server (lacss.cam.uchc.edu). The pixel data are sent via internet. The computation is done on the server side. You can obtained results quickly even if you are on a low-end computer without GPU.
+This simple Java plugin communicates with the open [GRPC](https://grpc.io/) server (lacss.biopb.org). The pixel data are sent via internet. The computation is done on the server side. You can obtained results quickly even if you are on a low-end computer without GPU.
 
 ## Installation
 
@@ -23,9 +23,9 @@ Start TrackMate in Fiji (`Plugins/Tracking/TrackMate`). At the detector selectio
 <img src=".github/images/trackmate_img_1.png" height="350">
 
 
-## Not using the public server
+## (Optional) Setup your own server
 
-By default, trackmate-lacss will try to connect to the public server that we setup at lacss.cam.uchc.edu. However, you can also easily setup your own server, which allows for faster reponse and better data security.
+By default, trackmate-lacss will try to connect to the public server that we setup at lacss.biopb.org. However, you can also easily setup your own server, which allows for faster reponse and better data security.
 
 #### Requirement: A linux system with an NVidia GPU.
 
