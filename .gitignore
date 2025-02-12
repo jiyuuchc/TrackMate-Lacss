@@ -24,3 +24,6 @@ pom.xml.releaseBackup
 
 .vscode/**
 src/main/resources/model/**
+
+fiji-linux64.zip
+Fiji.app/

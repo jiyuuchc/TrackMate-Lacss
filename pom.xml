@@ -13,7 +13,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>trackmate-lacss</artifactId>
-	<version>0.6.0</version>
+	<version>0.6.1-SNAPSHOT</version>
 
 	<name>TrackMate-Lacss</name>
 	<description>TrackMate detector based on the Lacss model.</description>
@@ -82,10 +82,6 @@
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.projectName>TrackMate-Lacss</license.projectName>
 		<license.copyrightOwners>Developers</license.copyrightOwners>
-		<!-- NB: Deploy releases to the SciJava Maven repository. -->
-		<!--releaseProfiles>sign,deploy-to-scijava</releaseProfiles -->
-
-		<!-- <TrackMate.version>7.10.2</TrackMate.version> -->
 	</properties>
 
 	<dependencies>
@@ -133,31 +129,19 @@
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom2</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.github.jiyuuchc</groupId>
+			<artifactId>biopb</artifactId>
+			<version>0.1.2</version>
+		</dependency>
 
-		<!-- grpc dependencies-->
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-netty-shaded</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-protobuf</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-stub</artifactId>
-		</dependency>
-		<dependency> <!-- necessary for Java 9+ -->
+		<!-- necessary for Java 9+ -->
+		<!-- <dependency> 
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>annotations-api</artifactId>
 			<version>6.0.53</version>
 			<scope>provided</scope>
-		</dependency>
+		</dependency> -->
 	</dependencies>
 
 	<repositories>
@@ -179,26 +163,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.xolstice.maven.plugins</groupId>
-				<artifactId>protobuf-maven-plugin</artifactId>
-				<version>0.6.1</version>
-				<configuration>
-					<protocArtifact>com.google.protobuf:protoc:3.25.3:exe:${os.detected.classifier}</protocArtifact>
-					<pluginId>grpc-java</pluginId>
-					<pluginArtifact>io.grpc:protoc-gen-grpc-java:1.55.1:exe:${os.detected.classifier}</pluginArtifact>
-					<!-- <excludes><exclude>ome/*.proto</exclude></excludes> -->
-					<includes><include>biopb/image/*.proto</include></includes>
-				</configuration>
-				<executions>
-					<execution>
-					<goals>
-						<goal>compile</goal>
-						<goal>compile-custom</goal>
-					</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
